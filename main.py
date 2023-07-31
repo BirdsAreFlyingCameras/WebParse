@@ -2,12 +2,22 @@ import re
 import requests
 from bs4 import BeautifulSoup
 import pandas
-
+import sys
 PhoneNumbersToBeFiltered = []
 PhoneNumbersFiltered = []
 EmailsToBeFiltered = []
 EmailsFiltered = []
+AddressesToBeFiltered = []
+AddressesFiltered = []
 
+
+
+
+AddressesRegex = r"^\d{1,5}\s\w{1,20}(?:[A-Za-z0-9. -]+[ ]?)+\w{2,}\.?(?:[,]\s\w{1,20}\s[A-Z]{2}\s\d{5})?$"  # matchs    501 Willow Lane, Greenville AL 36037 | 3371 S Alabama Ave, Monroeville AL 36460 | 34301 Hwy 43, Thomasville AL 36784
+AddressesRegex2 = r"^\w{1,10}.\w{1,10}?.\w{1,10}?,.Suite.\d{1,10},.\w{1,20},.\w{2}.\d{1,5}"
+AddressesRegex3 = r"^\d{1,5}.\w{1,20}.\w{1,10}.\w{2}\n\w{1,20},.\w{2}.\d{1,5}"
+AddressesRegex4 = r"^\d{1,5}.\w{1,2}\W{1}.\w{1,20}.\w{1,20}.\w{1,20}.\w{1,20},.\w{2}.\d{1,5}"
+AddressesRegex5 = r"^\d{1,5}.\w{1,2}\W{1}.\w{1,20}.\w{1,20}.\n.\w{1,20}.\w{1,20},.\w{2}.\d{1,5}"
 
 
 EmailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
@@ -18,7 +28,7 @@ PhoneNumberRegex4 = r"^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}.$"
 PhoneNumberRegex5 = r"^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
 PhoneNumberRegex6 = r"^\d{10}"
 
-Response = requests.get("https://www.ally.com/contact-us/")
+Response = requests.get("https://www.peoplemetrics.com/contact")
 HtmlContent = Response.text
 
 soup = BeautifulSoup(HtmlContent, 'html.parser')
@@ -68,30 +78,35 @@ for i in EmailsToBeFiltered:
 
 
 
+for tagU3 in soup.find_all(tags):
+    Addresses = tagU3.get_text().strip()
+    for AddressesRegexs in AddressesRegex, AddressesRegex2, AddressesRegex3, AddressesRegex4, AddressesRegex5:
+        if re.match(AddressesRegexs, Addresses):
+            AddressesToBeFiltered.append(Addresses)
 
-DF1 = pandas.DataFrame({
+for i in AddressesToBeFiltered:
+    if i not in AddressesFiltered:
+        AddressesFiltered.append(i)
+
+
+DF = pandas.DataFrame({
 
 
     'Phone Numbers': PhoneNumbersFiltered,
-
-})
-
-
-DF2 = pandas.DataFrame({
-
-
     'Emails': EmailsFiltered,
+    'Addresses': AddressesFiltered,
 
 })
 
-print(EmailsFiltered)
-print(PhoneNumbersFiltered)
 
-DFF = pandas.concat([DF1, DF2], axis=1)
-
-pandas.melt(DFF)
+DFF = pandas.melt(DF)
 
 print(DFF)
+
+
+
+with open('output.txt', 'w') as file:
+    file.write(DFF.to_string())
 
 # This code will be a regex libreary for my WebsiteInfoGrabber project
 

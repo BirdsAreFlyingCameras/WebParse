@@ -4,6 +4,10 @@ from bs4 import BeautifulSoup
 import pandas
 
 PhoneNumbersToBeFiltered = []
+PhoneNumbersFiltered = []
+EmailsToBeFiltered = []
+EmailsFiltered = []
+
 
 
 EmailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
@@ -14,7 +18,7 @@ PhoneNumberRegex4 = r"^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}.$"
 PhoneNumberRegex5 = r"^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
 PhoneNumberRegex6 = r"^\d{10}"
 
-Response = requests.get("https://www.missionoaksdental.com/contact/dentist-appointment/?sc_cid=GBP%3AO%3AGP%3A166%3AOrganic_Search%3AGeneral%3Ana&y_source=1_MTEwMjc1NS03MTUtbG9jYXRpb24ucmVzZXJ2YXRpb25fdXJs")
+Response = requests.get("https://www.ally.com/contact-us/")
 HtmlContent = Response.text
 
 soup = BeautifulSoup(HtmlContent, 'html.parser')
@@ -41,30 +45,53 @@ tags = [
 
 
 
-for tags in soup.find_all(tags):
-    PhoneNumber = tags.get_text().strip()
-    for PhoneRegex in PhoneNumberRegex1, PhoneNumberRegex2, PhoneNumberRegex3, PhoneNumberRegex4, PhoneNumberRegex5, PhoneNumberRegex6, EmailRegex:
+for tagU1 in soup.find_all(tags):
+    PhoneNumber = tagU1.get_text().strip()
+    for PhoneRegex in PhoneNumberRegex1, PhoneNumberRegex2, PhoneNumberRegex3, PhoneNumberRegex4, PhoneNumberRegex5, PhoneNumberRegex6:
         if re.match(PhoneRegex, PhoneNumber):
             PhoneNumbersToBeFiltered.append(PhoneNumber)
 
-PhoneNumbersFiltered = []
+
 for i in PhoneNumbersToBeFiltered:
     if i not in PhoneNumbersFiltered:
         PhoneNumbersFiltered.append(i)
 
 
+for tagU2 in soup.find_all(tags):
+    Emails = tagU2.get_text().strip()
+    if re.match(EmailRegex, Emails):
+        EmailsToBeFiltered.append(Emails)
 
-DF = pandas.DataFrame(
-
-    [PhoneNumbersFiltered],
-    index = [PhoneNumbersFiltered.index(i) for i in PhoneNumbersFiltered],
-    columns = ["Phone Numbers"]
-
-)
-
-print(DF)
+for i in EmailsToBeFiltered:
+    if i not in EmailsFiltered:
+        EmailsFiltered.append(i)
 
 
+
+
+DF1 = pandas.DataFrame({
+
+
+    'Phone Numbers': PhoneNumbersFiltered,
+
+})
+
+
+DF2 = pandas.DataFrame({
+
+
+    'Emails': EmailsFiltered,
+
+})
+
+print(EmailsFiltered)
+print(PhoneNumbersFiltered)
+
+DFF = pandas.concat([DF1, DF2], axis=1)
+
+pandas.melt(DFF)
+
+print(DFF)
 
 # This code will be a regex libreary for my WebsiteInfoGrabber project
 

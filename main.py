@@ -2,18 +2,20 @@ import re
 import requests
 from bs4 import BeautifulSoup
 import pandas
-import sys
 PhoneNumbersToBeFiltered = []
 PhoneNumbersFiltered = []
 EmailsToBeFiltered = []
 EmailsFiltered = []
 AddressesToBeFiltered = []
 AddressesFiltered = []
+NamesToBeFiltered = []
+NamesFiltered = []
 
 
 
-
-AddressesRegex = r"^\d{1,5}\s\w{1,20}(?:[A-Za-z0-9. -]+[ ]?)+\w{2,}\.?(?:[,]\s\w{1,20}\s[A-Z]{2}\s\d{5})?$"  # matchs    501 Willow Lane, Greenville AL 36037 | 3371 S Alabama Ave, Monroeville AL 36460 | 34301 Hwy 43, Thomasville AL 36784
+NameRegex1 = r"^[A-Z][a-z]{1,15}.[A-Z][a-z]{1,15}$"
+NameRegex2 = r"^[A-Z][a-z]{1,15}.[A-Z][a-z]{1,15}.[A-Z][a-z]{1,15}$"
+AddressesRegex = r"^\d{1,5}\s\w{1,20}(?:[A-Za-z0-9. -]+[ ]?)+\w{2,}\.?(?:[,]\s\w{1,20}\s[A-Z]{2}\s\d{5})?$"
 AddressesRegex2 = r"^\w{1,10}.\w{1,10}?.\w{1,10}?,.Suite.\d{1,10},.\w{1,20},.\w{2}.\d{1,5}"
 AddressesRegex3 = r"^\d{1,5}.\w{1,20}.\w{1,10}.\w{2}\n\w{1,20},.\w{2}.\d{1,5}"
 AddressesRegex4 = r"^\d{1,5}.\w{1,2}\W{1}.\w{1,20}.\w{1,20}.\w{1,20}.\w{1,20},.\w{2}.\d{1,5}"
@@ -88,25 +90,92 @@ for i in AddressesToBeFiltered:
     if i not in AddressesFiltered:
         AddressesFiltered.append(i)
 
+for tagU4 in soup.find_all(tags):
+    Names = tagU4.get_text().strip()
+    for NameRegexs in NameRegex1, NameRegex2:
+        if re.match(NameRegexs, Names):
+            NamesToBeFiltered.append(Names)
 
-DF = pandas.DataFrame({
-
-
-    'Phone Numbers': PhoneNumbersFiltered,
-    'Emails': EmailsFiltered,
-    'Addresses': AddressesFiltered,
-
-})
-
-
-DFF = pandas.melt(DF)
-
-print(DFF)
+for i in NamesToBeFiltered:
+    if i not in NamesFiltered:
+        NamesFiltered.append(i)
 
 
+
+if len(PhoneNumbersFiltered) == 0:
+    pass
+else:
+    DF1 = pandas.DataFrame({ 'Phone Numbers': PhoneNumbersFiltered})
+    DF1Valid = True
+
+if len(EmailsFiltered) == 0:
+    pass
+else:
+    DF2 = pandas.DataFrame({ 'Emails': EmailsFiltered})
+    DF2Valid = True
+
+if len(AddressesFiltered) == 0:
+    pass
+else:
+    DF3 = pandas.DataFrame({ 'Addresses': AddressesFiltered})
+    DF3Valid = True
+
+if len(NamesFiltered) == 0:
+    pass
+else:
+    DF4 = pandas.DataFrame({ 'Names': NamesFiltered})
+    DF4Valid = True
+
+
+#    DF = pandas.DataFrame({
+#
+#        'Phone Numbers': PhoneNumbersFiltered,
+#        'Emails': EmailsFiltered,
+#        'Addresses': AddressesFiltered,
+#
+#})
+#DFF = pandas.melt(DF)
+
+if DF1Valid == True:
+    print(DF1.to_string(index=False).strip())
+else:
+    pass
+
+if DF2Valid == True:
+    print(DF2.to_string(index=False).strip())
+else:
+    pass
+
+if DF3Valid == True:
+    print(DF3.to_string(index=False).strip())
+else:
+    pass
+
+if DF4Valid == True:
+    print(DF4.to_string(index=False).strip())
+else:
+    pass
+
+
+print(len(DF4))
 
 with open('output.txt', 'w') as file:
-    file.write(DFF.to_string())
+    if DF1Valid == True:
+       file.write(DF1.to_string(index=False).strip()+'\n'+'\r')
+    else:
+        pass
+    if DF2Valid == True:
+        file.write(DF2.to_string(index=False).strip()+'\n'+'\r')
+    else:
+        pass
+    if DF3Valid == True:
+        file.write(DF3.to_string(index=False).strip()+'\n'+'\r')
+    else:
+        pass
+    if DF4Valid == True:
+        file.write(DF4.to_string(index=False).strip()+'\n'+'\r')
+    else:
+        pass
 
 # This code will be a regex libreary for my WebsiteInfoGrabber project
 

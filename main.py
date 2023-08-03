@@ -1,7 +1,6 @@
 import re
 import requests
 from bs4 import BeautifulSoup
-import pandas
 PhoneNumbersToBeFiltered = []
 PhoneNumbersFiltered = []
 EmailsToBeFiltered = []
@@ -9,12 +8,23 @@ EmailsFiltered = []
 AddressesToBeFiltered = []
 AddressesFiltered = []
 NamesToBeFiltered = []
-NamesFiltered = []
+NamesFilteredReadyForAPI1 = []
+APIList = []
+APIOutput = []
+APIOutputFiltered = []
 
 
+EmailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
 
-NameRegex1 = r"^[A-Z][a-z]{1,15}.[A-Z][a-z]{1,15}$"
-NameRegex2 = r"^[A-Z][a-z]{1,15}.[A-Z][a-z]{1,15}.[A-Z][a-z]{1,15}$"
+
+NameRegex1 = r"^[A-Z]{1}[a-z]{1,15}\s[A-Z]{1][a-z]{1,15}$"
+NameRegex2 = r"^[A-Z]{1}[a-z]{1,15}\s[A-Z]{1}[a-z]{1,15}\s[A-Z]{1}[a-z]{1,15}$"
+NameRegex3 = r"^[A-Z]{1}[a-z]{1,15}\s[A-Z]{1}.\s[A-Z]{1}[a-z]{1,15}$"
+NameRegex4 = r'^(?:Ms|Mrs|Mr|Miss|Master|Mx|Dr|Prof|Rev|Hon|Col|Gen|Maj|Capt|Sen|Rep|Esq)\.[A-Z]\w{1,15}$'
+NameRegex5 = r'^(?:Ms|Mrs|Mr|Miss|Master|Mx|Dr|Prof|Rev|Hon|Col|Gen|Maj|Capt|Sen|Rep|Esq)\.[A-Z]{1}[a-z]{1,15}\s[A-Z]{1}[a-z]{0,15}$'
+NameRegex6 = r'^(?:Ms|Mrs|Mr|Miss|Master|Mx|Dr|Prof|Rev|Hon|Col|Gen|Maj|Capt|Sen|Rep|Esq)\.[A-Z]{1}[a-z]{1,15}\s[A-Z]{1}[a-z]{0,15}\s[A-Z]{1}[a-z]{0,15}$'
+
+
 AddressesRegex = r"^\d{1,5}\s\w{1,20}(?:[A-Za-z0-9. -]+[ ]?)+\w{2,}\.?(?:[,]\s\w{1,20}\s[A-Z]{2}\s\d{5})?$"
 AddressesRegex2 = r"^\w{1,10}.\w{1,10}?.\w{1,10}?,.Suite.\d{1,10},.\w{1,20},.\w{2}.\d{1,5}"
 AddressesRegex3 = r"^\d{1,5}.\w{1,20}.\w{1,10}.\w{2}\n\w{1,20},.\w{2}.\d{1,5}"
@@ -22,7 +32,6 @@ AddressesRegex4 = r"^\d{1,5}.\w{1,2}\W{1}.\w{1,20}.\w{1,20}.\w{1,20}.\w{1,20},.\
 AddressesRegex5 = r"^\d{1,5}.\w{1,2}\W{1}.\w{1,20}.\w{1,20}.\n.\w{1,20}.\w{1,20},.\w{2}.\d{1,5}"
 
 
-EmailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
 PhoneNumberRegex1 = r"^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
 PhoneNumberRegex2 = r"^\+?1?-\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
 PhoneNumberRegex3 = r"\+?1?\s?\(?\d{3}\)?\s]?\d{3}\s]?\d{4}$"
@@ -30,7 +39,9 @@ PhoneNumberRegex4 = r"^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}.$"
 PhoneNumberRegex5 = r"^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
 PhoneNumberRegex6 = r"^\d{10}"
 
-Response = requests.get("https://www.peoplemetrics.com/contact")
+Response = requests.get("https://www.unileverusa.com/contact")
+#Response = requests.get("https://www.peoplemetrics.com/contact") | Works
+
 HtmlContent = Response.text
 
 soup = BeautifulSoup(HtmlContent, 'html.parser')
@@ -90,92 +101,128 @@ for i in AddressesToBeFiltered:
     if i not in AddressesFiltered:
         AddressesFiltered.append(i)
 
+
+
+
 for tagU4 in soup.find_all(tags):
     Names = tagU4.get_text().strip()
-    for NameRegexs in NameRegex1, NameRegex2:
+    for NameRegexs in NameRegex1, NameRegex2, NameRegex3, NameRegex4, NameRegex5, NameRegex6:
         if re.match(NameRegexs, Names):
             NamesToBeFiltered.append(Names)
 
+
 for i in NamesToBeFiltered:
-    if i not in NamesFiltered:
-        NamesFiltered.append(i)
+    if i not in NamesFilteredReadyForAPI1:
+        NamesFilteredReadyForAPI1.append(i)
+
+APIReadySTR = str(NamesFilteredReadyForAPI1).replace("[", "").replace("]", "").replace("'", "").replace(",", "").replace("(", "").replace(")", "")
+
+for i in APIReadySTR.split():
+        APIList.append(i)
+
+
+for i in APIList:
+    if requests.get(f"https://api.dictionaryapi.dev/api/v2/entries/en/{i}").status_code == 200:
+        pass
+    if requests.get(f"https://api.dictionaryapi.dev/api/v2/entries/en/{i}").status_code == 404:
+        APIOutput.append(i)
+
+
+APIOutputToString = str(APIOutput)
+APIOutputToString = APIOutputToString.replace("[", "").replace("]", "").replace("'", "").replace(",", "").replace("(", "").replace(")", "")
+
+
+for i in APIOutputToString.split():
+    if re.match(NameRegex1, i):
+        APIOutputFiltered.append(i)
 
 
 
 if len(PhoneNumbersFiltered) == 0:
-    pass
+    print("No Phone Numbers Found")
 else:
-    DF1 = pandas.DataFrame({ 'Phone Numbers': PhoneNumbersFiltered})
-    DF1Valid = True
+    print("Phone Numbers Found: " + str(PhoneNumbersFiltered).replace("[", "").replace("]", "").replace("'", "").replace(",", "|").replace("(", "").replace(")", ""))
 
 if len(EmailsFiltered) == 0:
-    pass
+    print("No Emails Found")
 else:
-    DF2 = pandas.DataFrame({ 'Emails': EmailsFiltered})
-    DF2Valid = True
+    print("Emails Found: " + str(EmailsFiltered).replace("[", "").replace("]", "").replace("'", "").replace(",", "|").replace("(", "").replace(")", ""))
 
 if len(AddressesFiltered) == 0:
-    pass
+    print("No Addresses Found")
 else:
-    DF3 = pandas.DataFrame({ 'Addresses': AddressesFiltered})
-    DF3Valid = True
+    print("Addresses Found: " + str(AddressesFiltered).replace("[", "").replace("]", "").replace("'", "").replace(",", "|").replace("(", "").replace(")", ""))
 
-if len(NamesFiltered) == 0:
-    pass
+if len(APIOutputFiltered) == 0:
+    print("No Names Found")
 else:
-    DF4 = pandas.DataFrame({ 'Names': NamesFiltered})
-    DF4Valid = True
+    print("Names Found: " + str(APIOutputFiltered).replace("[", "").replace("]", "").replace("'", "").replace(",", "|").replace("(", "").replace(")", ""))
 
 
-#    DF = pandas.DataFrame({
-#
-#        'Phone Numbers': PhoneNumbersFiltered,
-#        'Emails': EmailsFiltered,
-#        'Addresses': AddressesFiltered,
-#
-#})
-#DFF = pandas.melt(DF)
+#f len(PhoneNumbersFiltered) == 0:
 
-if DF1Valid == True:
-    print(DF1.to_string(index=False).strip())
-else:
-    pass
+#   print("No Phone Numbers Found")
+#   with open('output.txt', 'w') as file:
+#       file.write("No Phone Numbers Found" + '\n' + '\r')
 
-if DF2Valid == True:
-    print(DF2.to_string(index=False).strip())
-else:
-    pass
+#lse:
 
-if DF3Valid == True:
-    print(DF3.to_string(index=False).strip())
-else:
-    pass
+#   DF1 = pandas.DataFrame({ 'Phone Numbers': PhoneNumbersFiltered})
+#   print(DF1.to_string(index=False).strip())
 
-if DF4Valid == True:
-    print(DF4.to_string(index=False).strip())
-else:
-    pass
+#   with open('output.txt', 'w') as file:
+#      file.write(DF1.to_string(index=False).strip()+'\n'+'\r')
 
 
-print(len(DF4))
 
-with open('output.txt', 'w') as file:
-    if DF1Valid == True:
-       file.write(DF1.to_string(index=False).strip()+'\n'+'\r')
-    else:
-        pass
-    if DF2Valid == True:
-        file.write(DF2.to_string(index=False).strip()+'\n'+'\r')
-    else:
-        pass
-    if DF3Valid == True:
-        file.write(DF3.to_string(index=False).strip()+'\n'+'\r')
-    else:
-        pass
-    if DF4Valid == True:
-        file.write(DF4.to_string(index=False).strip()+'\n'+'\r')
-    else:
-        pass
+#f len(EmailsFiltered) == 0:
+
+#   print("No Emails Found")
+
+#   with open('output.txt', 'w') as file:
+#       file.write("No Emails Found")
+
+#lse:
+
+#   DF2 = pandas.DataFrame({ 'Emails': EmailsFiltered})
+#   print(DF2.to_string(index=False).strip())
+
+#   with open('output.txt', 'w') as file:
+#       file.write(DF2.to_string(index=False).strip() + '\n' + '\r')
+
+
+
+#f len(AddressesFiltered) == 0:
+
+#   print("No Addresses Found")
+
+#   with open('output.txt', 'w') as file:
+#       file.write("No Addresses Found" + '\n' + '\r')
+#lse:
+
+#   DF3 = pandas.DataFrame({ 'Addresses': AddressesFiltered})
+#   print(DF3.to_string(index=False).strip())
+
+#   with open('output.txt', 'w') as file:
+#       file.write(DF3.to_string(index=False).strip() + '\n' + '\r')
+
+
+
+#f len(APIOutput) == 0:
+
+#   print("No Names Found")
+
+#   with open('output.txt', 'w') as file:
+#       file.write("No Names Found" + '\n' + '\r')
+
+#lse:
+
+#   DF4 = pandas.DataFrame({ 'Names': APIOutputFiltered})
+#   print(DF4.to_string(index=False).strip())
+
+#   with open('output.txt', 'w') as file:
+#       file.write(DF4.to_string(index=False).strip())
+
 
 # This code will be a regex libreary for my WebsiteInfoGrabber project
 

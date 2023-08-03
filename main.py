@@ -140,89 +140,52 @@ for i in APIOutputToString.split():
 
 if len(PhoneNumbersFiltered) == 0:
     print("No Phone Numbers Found")
+    with open("outputs.txt", "w") as file:
+        file.write("No Phone Numbers Found")
+
 else:
-    print("Phone Numbers Found: " + str(PhoneNumbersFiltered).replace("[", "").replace("]", "").replace("'", "").replace(",", "|").replace("(", "").replace(")", ""))
+    PhoneNumberOutput = ("Phone Numbers Found: " + str(PhoneNumbersFiltered).replace("[", "").replace("]", "").replace("'", "").replace(",", "|").replace("(", "").replace(")", ""))
+
+    print(PhoneNumberOutput)
+
+    with open("outputs.txt", "w") as file:
+        file.write(PhoneNumberOutput+"\n")
+
 
 if len(EmailsFiltered) == 0:
     print("No Emails Found")
+    with open("outputs.txt", "a") as file:
+        file.write("No Emails Found")
 else:
-    print("Emails Found: " + str(EmailsFiltered).replace("[", "").replace("]", "").replace("'", "").replace(",", "|").replace("(", "").replace(")", ""))
+    EmailOutput = ("Emails Found: " + str(EmailsFiltered).replace("[", "").replace("]", "").replace("'", "").replace(",", "|").replace("(", "").replace(")", ""))
+
+    print(EmailOutput)
+
+    with open("outputs.txt", "a") as file:
+        file.write(EmailOutput+"\n")
 
 if len(AddressesFiltered) == 0:
     print("No Addresses Found")
+    with open("outputs.txt", "a") as file:
+        file.write("No Addresses Found")
+
 else:
-    print("Addresses Found: " + str(AddressesFiltered).replace("[", "").replace("]", "").replace("'", "").replace(",", "|").replace("(", "").replace(")", ""))
+    AddressesOutput = ("Addresses Found: " + str(AddressesFiltered).replace("[", "").replace("]", "").replace("'", "").replace(",", "|").replace("(", "").replace(")", ""))
+    print(AddressesOutput)
+
+    with open("outputs.txt", "a") as file:
+        file.write(AddressesOutput+"\n")
 
 if len(APIOutputFiltered) == 0:
     print("No Names Found")
+    with open("outputs.txt", "a") as file:
+        file.write("No Names Found")
 else:
-    print("Names Found: " + str(APIOutputFiltered).replace("[", "").replace("]", "").replace("'", "").replace(",", "|").replace("(", "").replace(")", ""))
+    NamesOutput = ("Names Found: " + str(APIOutputFiltered).replace("[", "").replace("]", "").replace("'", "").replace(",", "").replace("(", "").replace(")", ""))
+    print(NamesOutput)
 
-
-#f len(PhoneNumbersFiltered) == 0:
-
-#   print("No Phone Numbers Found")
-#   with open('output.txt', 'w') as file:
-#       file.write("No Phone Numbers Found" + '\n' + '\r')
-
-#lse:
-
-#   DF1 = pandas.DataFrame({ 'Phone Numbers': PhoneNumbersFiltered})
-#   print(DF1.to_string(index=False).strip())
-
-#   with open('output.txt', 'w') as file:
-#      file.write(DF1.to_string(index=False).strip()+'\n'+'\r')
-
-
-
-#f len(EmailsFiltered) == 0:
-
-#   print("No Emails Found")
-
-#   with open('output.txt', 'w') as file:
-#       file.write("No Emails Found")
-
-#lse:
-
-#   DF2 = pandas.DataFrame({ 'Emails': EmailsFiltered})
-#   print(DF2.to_string(index=False).strip())
-
-#   with open('output.txt', 'w') as file:
-#       file.write(DF2.to_string(index=False).strip() + '\n' + '\r')
-
-
-
-#f len(AddressesFiltered) == 0:
-
-#   print("No Addresses Found")
-
-#   with open('output.txt', 'w') as file:
-#       file.write("No Addresses Found" + '\n' + '\r')
-#lse:
-
-#   DF3 = pandas.DataFrame({ 'Addresses': AddressesFiltered})
-#   print(DF3.to_string(index=False).strip())
-
-#   with open('output.txt', 'w') as file:
-#       file.write(DF3.to_string(index=False).strip() + '\n' + '\r')
-
-
-
-#f len(APIOutput) == 0:
-
-#   print("No Names Found")
-
-#   with open('output.txt', 'w') as file:
-#       file.write("No Names Found" + '\n' + '\r')
-
-#lse:
-
-#   DF4 = pandas.DataFrame({ 'Names': APIOutputFiltered})
-#   print(DF4.to_string(index=False).strip())
-
-#   with open('output.txt', 'w') as file:
-#       file.write(DF4.to_string(index=False).strip())
-
+    with open("outputs.txt", "a") as file:
+        file.write(NamesOutput+"\n")
 
 # This code will be a regex libreary for my WebsiteInfoGrabber project
 

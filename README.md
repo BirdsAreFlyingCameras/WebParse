@@ -1,11 +1,11 @@
 # WebParse
-Version Number: Beta 0.1.3
+Version Number: Beta 0.2
 
 About:
 
-This is a text parsing script to pull phone numbers, emails, names, and addresses from the output of a web request.
+This is a parsing script to pull phone numbers, emails, names, and addresses from the output of a web request.
 
-I plan to integrate this into an OSINT automation tool that I am coding up. This is one of many modules for that project.
+I plan to integrate this into an OSINT automation tool that I am working on. This is one of many modules for that project.
 
 Goals:
 
@@ -13,11 +13,11 @@ The goal of this project is to filter phone numbers, emails, names, and addresse
 
 Methods:
 
-I am mainly using regex to parse, but I anticipate using an API for the names and addresses.
+I am mainly using regex to parse the data, but I am also looking at other options to make the script more efficient and reliable.
 
 Libraries used:
 
-Request, re, Pandas, BeautifulSoup
+Request, re, BeautifulSoup
 
 
 ***Not A Bird | CEO of Bird Inc.***

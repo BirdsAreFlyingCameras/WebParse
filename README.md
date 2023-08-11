@@ -1,5 +1,5 @@
 # WebParse
-Version Number: Beta 0.2
+Version Number: Beta 0.2.2
 
 About:
 

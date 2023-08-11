@@ -6,6 +6,7 @@ PhoneNumbersFiltered = []
 EmailsToBeFiltered = []
 EmailsFiltered = []
 AddressesToBeFiltered = []
+AddressesToBeFiltered2 = []
 AddressesFiltered = []
 NamesToBeFiltered = []
 NamesFilteredReadyForAPI1 = []
@@ -31,6 +32,28 @@ AddressesRegex3 = r"^\d{1,5}.\w{1,20}.\w{1,10}.\w{2}\n\w{1,20},.\w{2}.\d{1,5}"
 AddressesRegex4 = r"^\d{1,5}.\w{1,2}\W{1}.\w{1,20}.\w{1,20}.\w{1,20}.\w{1,20},.\w{2}.\d{1,5}"
 AddressesRegex5 = r"^\d{1,5}.\w{1,2}\W{1}.\w{1,20}.\w{1,20}.\n.\w{1,20}.\w{1,20},.\w{2}.\d{1,5}"
 
+StreetEndings = [
+    "Avenue", "Ave.",
+    "Boulevard", "Blvd.",
+    "Drive", "Dr.",
+    "Lane", "Ln.",
+    "Place", "Pl.",
+    "Road", "Rd.",
+    "Street", "St.",
+    "Way", "Wy.",
+    "Circle", "Cir.",
+    "Court", "Ct.",
+    "Crescent", "Cres.",
+    "Expressway", "Expy.",
+    "Freeway", "Fwy.",
+    "Parkway", "Pkwy.",
+    "Square", "Sq.",
+]
+
+
+
+
+
 
 PhoneNumberRegex1 = r"^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
 PhoneNumberRegex2 = r"^\+?1?-\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
@@ -38,6 +61,10 @@ PhoneNumberRegex3 = r"\+?1?\s?\(?\d{3}\)?\s]?\d{3}\s]?\d{4}$"
 PhoneNumberRegex4 = r"^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}.$"
 PhoneNumberRegex5 = r"^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
 PhoneNumberRegex6 = r"^\d{10}"
+
+
+
+
 
 Response = requests.get("https://www.unileverusa.com/contact")
 #Response = requests.get("https://www.peoplemetrics.com/contact") | Works
@@ -97,9 +124,24 @@ for tagU3 in soup.find_all(tags):
         if re.match(AddressesRegexs, Addresses):
             AddressesToBeFiltered.append(Addresses)
 
+
 for i in AddressesToBeFiltered:
+    for x in StreetEndings:
+        for AddressesRegexs in AddressesRegex, AddressesRegex2, AddressesRegex3, AddressesRegex4, AddressesRegex5:
+
+             if i.find(x and x):
+                 z = (i.replace("Ave.", ""))
+                 if re.match(AddressesRegexs, z):
+                     AddressesToBeFiltered2.append(z)
+
+print(AddressesToBeFiltered2)
+
+
+for i in AddressesToBeFiltered2:
     if i not in AddressesFiltered:
         AddressesFiltered.append(i)
+
+
 
 
 

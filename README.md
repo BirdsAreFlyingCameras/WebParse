@@ -19,9 +19,14 @@ Libraries used:
 
 Request, re, BeautifulSoup
 
+APIs used:
+
+    dictionary API: dictionaryapi.dev
+
+        uses: I am using this API to help filter names in combination with regex.
+
 
 ***Not A Bird | CEO of Bird Inc.***
-
 
   
   

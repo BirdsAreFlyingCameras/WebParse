@@ -19,9 +19,14 @@ Libraries used:
 
 Request, re, BeautifulSoup
 
+APIs used:
+
+   dictionary API: dictionaryapi.dev
+
+
+        
 
 ***Not A Bird | CEO of Bird Inc.***
-
 
   
   

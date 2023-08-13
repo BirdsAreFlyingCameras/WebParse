@@ -8,8 +8,11 @@ PhoneNumbersFormatted = []
 EmailsToBeFiltered = []
 EmailsFiltered = []
 AddressesToBeFiltered = []
-AddressesToBeFiltered2 = []
 AddressesFiltered = []
+LongPrefixList = []
+ShortPrefixList = []
+AddyDict = {}
+
 NamesToBeFiltered = []
 NamesFilteredReadyForAPI1 = []
 APIList = []
@@ -74,8 +77,8 @@ PhoneNumberRegex4 = r"^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}.$"
 PhoneNumberRegex5 = r"^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
 PhoneNumberRegex6 = r"^\d{10}"
 
-# Response = requests.get("https://www.unileverusa.com/contact")
-Response = requests.get("https://www.peoplemetrics.com/contact")  # | Works
+Response = requests.get("https://www.unileverusa.com/contact")
+#Response = requests.get("https://www.peoplemetrics.com/contact")  # | Works
 
 HtmlContent = Response.text
 
@@ -145,22 +148,16 @@ for tagU3 in soup.find_all(tags):
         if re.match(AddressesRegexs, Addresses):
             AddressesToBeFiltered.append(Addresses)
 
-for i in AddressesToBeFiltered:
-    for x in StreetEndingsLong:
-        for y in StreetEndingsShort:
-            for AddressesRegexs in AddressesRegex, AddressesRegex2, AddressesRegex3, AddressesRegex4, AddressesRegex5:
-                if i.find(x and y):
-                    z = (i.replace("Ave", "").replace("Blvd", "").replace("Dr", "").replace("Ln", "").replace("Way","").replace("Circle", "").replace("Court", "").replace("Crescent", "").replace("Expy", "").replace("Fwy","").replace("Pkwy", "")
-                            .replace("ave", "").replace("blvd", "").replace("dr", "").replace("ln", "").replace("way", "").replace("circle","").replace("court", "").replace("crescent", "").replace("expy", "").replace("fwy", "").replace("pkwy", "").replace("sq", "")
-                            .replace("Ave.", "").replace("Blvd.", "").replace("Dr.", "").replace("Ln.", "").replace("Way.", "").replace("Circle.", "").replace("Court.", "").replace("Crescent.", "").replace("Expy.", "").replace("Fwy.", "").replace("Pkwy.", "")
-                            .replace("Sq.", "").replace("ave.", "").replace("blvd.", "").replace("dr.", "").replace("ln.", "").replace("way.","").replace("circle.", "").replace("court.", "").replace("crescent.", "").replace("expy.", "").replace("fwy.", "").replace("pkwy.", "").replace("sq.", ""))
 
-                    if re.match(AddressesRegexs, z):
-                        AddressesToBeFiltered2.append(z)
+indices = [index for index, address in enumerate(AddressesToBeFiltered) if any(prefix in address for prefix in StreetEndingsLong)]
 
-for i in AddressesToBeFiltered2:
-    if i not in AddressesFiltered:
-        AddressesFiltered.append(i)
+
+for i in indices:
+
+    AddressesFiltered.append(AddressesToBeFiltered[i])
+
+print(AddressesFiltered)
+
 
 for tagU4 in soup.find_all(tags):
     Names = tagU4.get_text().strip()

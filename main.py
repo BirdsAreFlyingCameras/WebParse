@@ -2,241 +2,305 @@ import re
 import requests
 from bs4 import BeautifulSoup
 
-PhoneNumbersToBeFiltered = []
-PhoneNumbersFiltered = []
-PhoneNumbersFormatted = []
-EmailsToBeFiltered = []
-EmailsFiltered = []
-AddressesToBeFiltered = []
-AddressesFiltered = []
-LongPrefixList = []
-ShortPrefixList = []
-AddyDict = {}
 
-NamesToBeFiltered = []
-NamesFilteredReadyForAPI1 = []
-APIList = []
-APIOutput = []
-APIOutputFiltered = []
+def main():
 
-EmailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+    class Regexs:
 
-NameRegex1 = r"^[A-Z]{1}[a-z]{1,15}\s[A-Z]{1][a-z]{1,15}$"
-NameRegex2 = r"^[A-Z]{1}[a-z]{1,15}\s[A-Z]{1}[a-z]{1,15}\s[A-Z]{1}[a-z]{1,15}$"
-NameRegex3 = r"^[A-Z]{1}[a-z]{1,15}\s[A-Z]{1}.\s[A-Z]{1}[a-z]{1,15}$"
-NameRegex4 = r'^(?:Ms|Mrs|Mr|Miss|Master|Mx|Dr|Prof|Rev|Hon|Col|Gen|Maj|Capt|Sen|Rep|Esq)\.[A-Z]\w{1,15}$'
-NameRegex5 = r'^(?:Ms|Mrs|Mr|Miss|Master|Mx|Dr|Prof|Rev|Hon|Col|Gen|Maj|Capt|Sen|Rep|Esq)\.[A-Z]{1}[a-z]{1,15}\s[A-Z]{1}[a-z]{0,15}$'
-NameRegex6 = r'^(?:Ms|Mrs|Mr|Miss|Master|Mx|Dr|Prof|Rev|Hon|Col|Gen|Maj|Capt|Sen|Rep|Esq)\.[A-Z]{1}[a-z]{1,15}\s[A-Z]{1}[a-z]{0,15}\s[A-Z]{1}[a-z]{0,15}$'
-
-AddressesRegex = r"^\d{1,5}\s\w{1,20}(?:[A-Za-z0-9. -]+[ ]?)+\w{2,}\.?(?:[,]\s\w{1,20}\s[A-Z]{2}\s\d{5})?$"
-AddressesRegex2 = r"^\w{1,10}.\w{1,10}?.\w{1,10}?,.Suite.\d{1,10},.\w{1,20},.\w{2}.\d{1,5}"
-AddressesRegex3 = r"^\d{1,5}.\w{1,20}.\w{1,10}.\w{2}\n\w{1,20},.\w{2}.\d{1,5}"
-AddressesRegex4 = r"^\d{1,5}.\w{1,2}\W{1}.\w{1,20}.\w{1,20}.\w{1,20}.\w{1,20},.\w{2}.\d{1,5}"
-AddressesRegex5 = r"^\d{1,5}.\w{1,2}\W{1}.\w{1,20}.\w{1,20}.\n.\w{1,20}.\w{1,20},.\w{2}.\d{1,5}"
-
-StreetEndingsLong = [
-    "Avenue",
-    "Boulevard",
-    "Drive",
-    "Lane",
-    "Place",
-    "Road",
-    "Street",
-    "Way",
-    "Circle",
-    "Court",
-    "Crescent",
-    "Expressway",
-    "Freeway",
-    "Parkway",
-    "Square"
-]
-
-StreetEndingsShort = [
-    "Ave.",
-    "Blvd.",
-    "Dr.",
-    "Ln.",
-    "Pl.",
-    "Rd.",
-    "St.",
-    "Wy.",
-    "Cir.",
-    "Ct.",
-    "Cres.",
-    "Expy.",
-    "Fwy.",
-    "Pkwy.",
-    "Sq.",
-]
-
-PhoneNumberRegex1 = r"^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
-PhoneNumberRegex2 = r"^\+?1?-\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
-PhoneNumberRegex3 = r"\+?1?\s?\(?\d{3}\)?\s]?\d{3}\s]?\d{4}$"
-PhoneNumberRegex4 = r"^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}.$"
-PhoneNumberRegex5 = r"^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
-PhoneNumberRegex6 = r"^\d{10}"
-
-Response = requests.get("https://www.unileverusa.com/contact")
-#Response = requests.get("https://www.peoplemetrics.com/contact")  # | Works
-
-HtmlContent = Response.text
-
-soup = BeautifulSoup(HtmlContent, 'html.parser')
-
-tags = [
-    "a", "abbr", "address", "area", "article", "aside", "audio", "b", "base", "bdi",
-    "bdo", "blockquote", "body", "br", "button", "canvas", "caption", "cite", "code",
-    "col", "colgroup", "command", "datalist", "dd", "del", "details", "dfn", "dialog",
-    "div", "dl", "dt", "em", "embed", "fieldset", "figcaption", "figure", "footer",
-    "form", "h1", "h2", "h3", "h4", "h5", "h6", "head", "header", "hgroup", "html",
-    "i", "iframe", "img", "input", "ins", "kbd", "label", "legend", "li", "link",
-    "main", "map", "mark", "menu", "meta", "meter", "nav", "noscript", "object",
-    "ol", "optgroup", "option", "output", "p", "param", "picture", "pre", "progress",
-    "q", "rp", "rt", "ruby", "s", "samp", "section", "select", "slot", "small", "source",
-    "span", "strong", "style", "sub", "summary", "sup", "table", "tbody", "td", "textarea",
-    "tfoot", "th", "thead", "time", "title", "tr", "track", "u", "ul", "var", "video",
-    "wbr"
-]
-
-for tagU1 in soup.find_all(tags):
-    PhoneNumber = tagU1.get_text().strip()
-    for PhoneRegex in PhoneNumberRegex1, PhoneNumberRegex2, PhoneNumberRegex3, PhoneNumberRegex4, PhoneNumberRegex5, PhoneNumberRegex6:
-        if re.match(PhoneRegex, PhoneNumber):
-            PhoneNumbersToBeFiltered.append(PhoneNumber)
+        global EmailRegex, APIReadySTR
+        global NameRegex1, NameRegex2, NameRegex3, NameRegex4, NameRegex5, NameRegex6
+        global AddressesRegex , AddressesRegex2, AddressesRegex3, AddressesRegex4, AddressesRegex5
+        global PhoneNumberRegex1, PhoneNumberRegex2, PhoneNumberRegex3
+        global PhoneNumberRegex4, PhoneNumberRegex5, PhoneNumberRegex6
 
 
-for i in PhoneNumbersToBeFiltered:
+        EmailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
 
-        if i not in PhoneNumbersFiltered:
-            PhoneNumbersFiltered.append(i)
+        NameRegex1 = r"^[A-Z]{1}[a-z]{1,15}\s[A-Z]{1][a-z]{1,15}$"
+        NameRegex2 = r"^[A-Z]{1}[a-z]{1,15}\s[A-Z]{1}[a-z]{1,15}\s[A-Z]{1}[a-z]{1,15}$"
+        NameRegex3 = r"^[A-Z]{1}[a-z]{1,15}\s[A-Z]{1}.\s[A-Z]{1}[a-z]{1,15}$"
+        NameRegex4 = r'^(?:Ms|Mrs|Mr|Miss|Master|Mx|Dr|Prof|Rev|Hon|Col|Gen|Maj|Capt|Sen|Rep|Esq)\.[A-Z]\w{1,15}$'
+        NameRegex5 = r'^(?:Ms|Mrs|Mr|Miss|Master|Mx|Dr|Prof|Rev|Hon|Col|Gen|Maj|Capt|Sen|Rep|Esq)\.[A-Z]{1}[a-z]{1,' \
+                     r'15}\s[A-Z]{1}[a-z]{0,15}$'
+        NameRegex6 = r'^(?:Ms|Mrs|Mr|Miss|Master|Mx|Dr|Prof|Rev|Hon|Col|Gen|Maj|Capt|Sen|Rep|Esq)\.[A-Z]{1}[a-z]{1,' \
+                     r'15}\s[A-Z]{1}[a-z]{0,15}\s[A-Z]{1}[a-z]{0,15}$'
 
-for i in range(len(PhoneNumbersFiltered)):
+        AddressesRegex = r"^\d{1,5}\s\w{1,20}(?:[A-Za-z0-9. -]+[ ]?)+\w{2,}\.?(?:[,]\s\w{1,20}\s[A-Z]{2}\s\d{5})?$"
+        AddressesRegex2 = r"^\w{1,10}.\w{1,10}?.\w{1,10}?,.Suite.\d{1,10},.\w{1,20},.\w{2}.\d{1,5}"
+        AddressesRegex3 = r"^\d{1,5}.\w{1,20}.\w{1,10}.\w{2}\n\w{1,20},.\w{2}.\d{1,5}"
+        AddressesRegex4 = r"^\d{1,5}.\w{1,2}\W{1}.\w{1,20}.\w{1,20}.\w{1,20}.\w{1,20},.\w{2}.\d{1,5}"
+        AddressesRegex5 = r"^\d{1,5}.\w{1,2}\W{1}.\w{1,20}.\w{1,20}.\n.\w{1,20}.\w{1,20},.\w{2}.\d{1,5}"
 
-    PhonenumbersToBeFormated = str(PhoneNumbersFiltered[i]).replace(" ", "").replace("'", "").replace(",", "").replace("[", "").replace("]", "").replace("(", "").replace(")", "").replace("-", "").replace(".", "").replace("+", "")
+        PhoneNumberRegex1 = r"^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
+        PhoneNumberRegex2 = r"^\+?1?-\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
+        PhoneNumberRegex3 = r"\+?1?\s?\(?\d{3}\)?\s]?\d{3}\s]?\d{4}$"
+        PhoneNumberRegex4 = r"^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}.$"
+        PhoneNumberRegex5 = r"^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
+        PhoneNumberRegex6 = r"^\d{10}"
+    class ListAndDicts:
 
-
-
-    if len(PhonenumbersToBeFormated) == 10:
-        x = list(PhonenumbersToBeFormated)
-        x.insert(3, "-")
-        x.insert(7, "-")
-        y = (str(x).strip("[]").replace("'", "").replace(",", "").replace(" ", "").replace("(", "").replace(")", ""))
-        if y not in PhoneNumbersFormatted:
-            PhoneNumbersFormatted.append(y)
-    else:
-        if PhonenumbersToBeFormated not in PhoneNumbersFormatted:
-            PhoneNumbersFormatted.append(PhonenumbersToBeFormated)
-
-
-
-
-
-
-for tagU2 in soup.find_all(tags):
-    Emails = tagU2.get_text().strip()
-    if re.match(EmailRegex, Emails):
-        EmailsToBeFiltered.append(Emails)
-
-for i in EmailsToBeFiltered:
-    if i not in EmailsFiltered:
-        EmailsFiltered.append(i)
-
-for tagU3 in soup.find_all(tags):
-    Addresses = tagU3.get_text().strip()
-    for AddressesRegexs in AddressesRegex, AddressesRegex2, AddressesRegex3, AddressesRegex4, AddressesRegex5:
-        if re.match(AddressesRegexs, Addresses):
-            AddressesToBeFiltered.append(Addresses)
+        global PhoneNumbersToBeFiltered, PhoneNumbersFiltered, PhoneNumbersFormatted
+        global EmailsToBeFiltered, EmailsFiltered
+        global AddressesToBeFiltered, AddressesFiltered, LongPrefixList, ShortPrefixList, AddyDict
+        global StreetEndingsLong, StreetEndingsShort
+        global NamesToBeFiltered, NamesFilteredReadyForAPI1
+        global APIList, APIOutput, APIOutputFiltered
+        global tags
+        global PhoneNumberRegexList, NameRegexList, AddressesRegexList
+        global Replace
 
 
-indices = [index for index, address in enumerate(AddressesToBeFiltered) if any(prefix in address for prefix in StreetEndingsLong)]
+        PhoneNumbersToBeFiltered = []
+        PhoneNumbersFiltered = []
+        PhoneNumbersFormatted = []
+        EmailsToBeFiltered = []
+        EmailsFiltered = []
+        AddressesToBeFiltered = []
+        AddressesFiltered = []
+        LongPrefixList = []
+        ShortPrefixList = []
+        AddyDict = {}
+
+        NamesToBeFiltered = []
+        NamesFilteredReadyForAPI1 = []
+        APIList = []
+        APIOutput = []
+        APIOutputFiltered = []
+
+        StreetEndingsLong = [
+            "Avenue", "Boulevard", "Drive", "Lane",
+            "Place", "Road", "Street", "Way",
+            "Circle", "Court", "Crescent", "Expressway",
+            "Freeway", "Parkway", "Square"
+        ]
+
+        StreetEndingsShort = [
+            "Ave.","Blvd.","Dr.","Ln.",
+            "Pl.", "Rd.", "St.", "Wy.",
+            "Cir.", "Ct.", "Cres.", "Expy.",
+            "Fwy.","Pkwy.","Sq.",]
+
+        tags = [
+            "a", "abbr", "address", "area", "article", "aside", "audio", "b", "base", "bdi",
+            "bdo", "blockquote", "body", "br", "button", "canvas", "caption", "cite", "code",
+            "col", "colgroup", "command", "datalist", "dd", "del", "details", "dfn", "dialog",
+            "div", "dl", "dt", "em", "embed", "fieldset", "figcaption", "figure", "footer",
+            "form", "h1", "h2", "h3", "h4", "h5", "h6", "head", "header", "hgroup", "html",
+            "i", "iframe", "img", "input", "ins", "kbd", "label", "legend", "li", "link",
+            "main", "map", "mark", "menu", "meta", "meter", "nav", "noscript", "object",
+            "ol", "optgroup", "option", "output", "p", "param", "picture", "pre", "progress",
+            "q", "rp", "rt", "ruby", "s", "samp", "section", "select", "slot", "small", "source",
+            "span", "strong", "style", "sub", "summary", "sup", "table", "tbody", "td", "textarea",
+            "tfoot", "th", "thead", "time", "title", "tr", "track", "u", "ul", "var", "video",
+            "wbr"
+        ]
+
+        PhoneNumberRegexList = [PhoneNumberRegex1, PhoneNumberRegex2, PhoneNumberRegex3,
+                                 PhoneNumberRegex4, PhoneNumberRegex5, PhoneNumberRegex6]
+        NameRegexList = [NameRegex1, NameRegex2, NameRegex3, NameRegex4, NameRegex5, NameRegex6]
+
+        AddressesRegexList = [AddressesRegex, AddressesRegex2, AddressesRegex3, AddressesRegex4, AddressesRegex5]
 
 
-for i in indices:
-
-    AddressesFiltered.append(AddressesToBeFiltered[i])
-
-print(AddressesFiltered)
+        Replace = [" ", "'", ",", "[", "]", "(", ")","-", ".","+"]
 
 
-for tagU4 in soup.find_all(tags):
-    Names = tagU4.get_text().strip()
-    for NameRegexs in NameRegex1, NameRegex2, NameRegex3, NameRegex4, NameRegex5, NameRegex6:
-        if re.match(NameRegexs, Names):
-            NamesToBeFiltered.append(Names)
+    # Response = requests.get('https://www.progressive.com/contact-us')
+    #Response = requests.get("https://www.unileverusa.com/contact")  # | works
+    Response = requests.get("https://www.peoplemetrics.com/contact")  # | Works
 
-for i in NamesToBeFiltered:
-    if i not in NamesFilteredReadyForAPI1:
-        NamesFilteredReadyForAPI1.append(i)
+    HtmlContent = Response.text
 
-APIReadySTR = str(NamesFilteredReadyForAPI1).replace("[", "").replace("]", "").replace("'", "").replace(",","").replace("(","").replace(")", "")
+    soup = BeautifulSoup(HtmlContent, 'html.parser')
 
-for i in APIReadySTR.split():
-    APIList.append(i)
+    def FilterByTag():
 
-for i in APIList:
-    if requests.get(f"https://api.dictionaryapi.dev/api/v2/entries/en/{i}").status_code == 200:
-        pass
-    if requests.get(f"https://api.dictionaryapi.dev/api/v2/entries/en/{i}").status_code == 404:
-        APIOutput.append(i)
 
-APIOutputToString = str(APIOutput)
-APIOutputToString = APIOutputToString.replace("[", "").replace("]", "").replace("'", "").replace(",", "").replace("(","").replace(")", "")
+        def PhoneNumberTag():
+            for tagU1 in soup.find_all(tags):
+                PhoneNumber = tagU1.get_text().strip()
+                for PhoneRegex in PhoneNumberRegexList:
+                    if re.match(PhoneRegex, PhoneNumber):
+                        PhoneNumbersToBeFiltered.append(PhoneNumber)
 
-for i in APIOutputToString.split():
-    if re.match(NameRegex1, i):
-        APIOutputFiltered.append(i)
+            for i in PhoneNumbersToBeFiltered:
 
-if len(PhoneNumbersFiltered) == 0:
-    print("No Phone Numbers Found")
-    with open("outputs.txt", "w") as file:
-        file.write("No Phone Numbers Found")
+                if i not in PhoneNumbersFiltered:
+                    PhoneNumbersFiltered.append(i)
 
-else:
-    PhoneNumberOutput = (
-                "Phone Numbers Found: " + str(PhoneNumbersFormatted).replace("[", "").replace("]", "").replace("'","").replace(",", "").replace("(", "").replace(")", "").replace('\n', '|'))
+            for i in range(len(PhoneNumbersFiltered)):
 
-    print(PhoneNumberOutput)
+                for x in Replace:
+                    PhonenumbersToBeFormated = str(PhoneNumbersFiltered[i]).replace(x, "")
 
-    with open("outputs.txt", "w") as file:
-        file.write(PhoneNumberOutput + "\n")
+                if len(PhonenumbersToBeFormated) == 10:
+                    x = list(PhonenumbersToBeFormated)
+                    x.insert(3, "-")
+                    x.insert(7, "-")
+                    for i in Replace:
+                        NumberFormated = (str(x).strip("[]").replace(i, ""))
 
-if len(EmailsFiltered) == 0:
-    print("No Emails Found")
-    with open("outputs.txt", "a") as file:
-        file.write("No Emails Found")
-else:
-    EmailOutput = (
-                "Emails Found: " + str(EmailsFiltered).replace("[", "").replace("]", "").replace("'", "").replace(",","|").replace("(", "").replace(")", ""))
+                    if NumberFormated not in PhoneNumbersFormatted:
+                        PhoneNumbersFormatted.append(NumberFormated)
+                else:
+                    if PhonenumbersToBeFormated not in PhoneNumbersFormatted:
+                        PhoneNumbersFormatted.append(PhonenumbersToBeFormated)
 
-    print(EmailOutput)
+        PhoneNumberTag()
 
-    with open("outputs.txt", "a") as file:
-        file.write(EmailOutput + "\n")
+        def EmailTag():
 
-if len(AddressesFiltered) == 0:
-    print("No Addresses Found")
-    with open("outputs.txt", "a") as file:
-        file.write("No Addresses Found")
+            for tagU2 in soup.find_all(tags):
+                Emails = tagU2.get_text().strip()
+                if re.match(EmailRegex, Emails):
 
-else:
-    AddressesOutput = (
-                "Addresses Found: " + str(AddressesFiltered).replace("[", "").replace("]", "").replace("'", "").replace(",", "").replace("(", "").replace(")", ""))
-    print(AddressesOutput)
+                    if Emails not in EmailsToBeFiltered:
 
-    with open("outputs.txt", "a") as file:
-        file.write(AddressesOutput + "\n")
+                        EmailsToBeFiltered.append(Emails)
 
-if len(APIOutputFiltered) == 0:
-    print("No Names Found")
-    with open("outputs.txt", "a") as file:
-        file.write("No Names Found")
-else:
-    NamesOutput = (
-                "Names Found: " + str(APIOutputFiltered).replace("[", "").replace("]", "").replace("'", "").replace(",","").replace("(", "").replace(")", ""))
-    print(NamesOutput)
+                    else:
+                        continue
 
-    with open("outputs.txt", "a") as file:
-        file.write(NamesOutput + "\n")
+            for i in EmailsToBeFiltered:
+                if i not in EmailsFiltered:
+                    EmailsFiltered.append(i)
 
-# This code will be a regex libreary for my OSINT project
+        EmailTag()
+
+        def AddressesTag():
+
+            for tagU3 in soup.find_all(tags):
+                Addresses = tagU3.get_text().strip()
+                for AddressesRegexs in AddressesRegexList:
+                    if re.match(AddressesRegexs, Addresses):
+
+                        if Addresses not in AddressesToBeFiltered:
+
+                            AddressesToBeFiltered.append(Addresses)
+                        else:
+                            continue
+
+
+            indices = [index for index, address in enumerate(AddressesToBeFiltered) if
+                       any(prefix in address for prefix in StreetEndingsLong)]
+
+            for i in indices:
+                AddressesFiltered.append(AddressesToBeFiltered[i])
+
+        AddressesTag()
+
+        def NamesTag():
+
+            for tagU4 in soup.find_all(tags):
+                Names = tagU4.get_text().strip()
+                for NameRegexs in NameRegexList:
+                    if re.match(NameRegexs, Names):
+                        NamesToBeFiltered.append(Names)
+
+            for i in NamesToBeFiltered:
+                if i not in NamesFilteredReadyForAPI1:
+                    NamesFilteredReadyForAPI1.append(i)
+
+            for x in Replace:
+                APIReadySTR = str(NamesFilteredReadyForAPI1).replace(x, "")
+
+            for i in APIReadySTR.split():
+                APIList.append(i)
+
+            for i in APIList:
+                if requests.get(f"https://api.dictionaryapi.dev/api/v2/entries/en/{i}").status_code == 200:
+                    pass
+                if requests.get(f"https://api.dictionaryapi.dev/api/v2/entries/en/{i}").status_code == 404:
+                    APIOutput.append(i)
+
+            APIOutputToString = str(APIOutput)
+            for x in Replace:
+                APIOutputToString = APIOutputToString.replace(x,"")
+
+            for i in APIOutputToString.split():
+                if re.match(NameRegex1, i):
+                    APIOutputFiltered.append(i)
+        NamesTag()
+    FilterByTag()
+
+    def Outputs():
+
+        def PhoneNumbersOutput():
+            if len(PhoneNumbersFiltered) == 0:
+                print("No Phone Numbers Found")
+                with open("outputs.txt", "w") as file:
+                    file.write("No Phone Numbers Found")
+
+            else:
+                for x in Replace:
+                    PhoneNumberOutput = ("Phone Numbers Found: " + str(PhoneNumbersFormatted).replace("[", "").replace("]", "")
+                            .replace(x,"").replace("'", ""))
+
+                print(PhoneNumberOutput)
+
+                with open("outputs.txt", "w") as file:
+                    file.write(PhoneNumberOutput + "\n")
+
+        PhoneNumbersOutput()
+
+        def EmailsOutput():
+
+            if len(EmailsFiltered) == 0:
+                print("No Emails Found")
+                with open("outputs.txt", "a") as file:
+                    file.write("No Emails Found")
+            else:
+                for x in Replace:
+                    EmailOutput = ("Emails Found: " + str(EmailsFiltered).replace("[", "")
+                                   .replace("]", "").replace(x,"").replace("'", ""))
+
+                print(EmailOutput)
+
+                with open("outputs.txt", "a") as file:
+                    file.write(EmailOutput + "\n")
+
+
+        EmailsOutput()
+
+
+        def AddressesOutput():
+
+            if len(AddressesFiltered) == 0:
+                print("No Addresses Found")
+                with open("outputs.txt", "a") as file:
+                    file.write("No Addresses Found")
+
+            else:
+                for x in Replace:
+                    AddressesOutput = ("Addresses Found: " + str(AddressesFiltered).replace("[", "")
+                               .replace("]", "").replace(x,"").replace("'", ""))
+
+                print(AddressesOutput)
+
+                with open("outputs.txt", "a") as file:
+                    file.write(AddressesOutput + "\n")
+
+        AddressesOutput()
+
+        def NamesOutput():
+            if len(APIOutputFiltered) == 0:
+                print("No Names Found")
+                with open("outputs.txt", "a") as file:
+                    file.write("No Names Found")
+            else:
+                for x in Replace:
+                    NamesOutput = ("Names Found: " + str(APIOutputFiltered).replace("[", "")
+                                   .replace("]", "").replace(x,"").replace("'", ""))
+
+                print(NamesOutput)
+
+                with open("outputs.txt", "a") as file:
+                    file.write(NamesOutput + "\n")
+
+        NamesOutput()
+    Outputs()
+
+if __name__ == '__main__':
+    main()
+
+    # This code will be a regex libreary for my OSINT project

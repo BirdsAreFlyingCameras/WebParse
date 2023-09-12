@@ -1,7 +1,7 @@
 import re
 import requests
 from bs4 import BeautifulSoup
-
+import os
 
 def main():
 
@@ -9,7 +9,8 @@ def main():
 
         global EmailRegex, APIReadySTR
         global NameRegex1, NameRegex2, NameRegex3, NameRegex4, NameRegex5, NameRegex6
-        global AddressesRegex , AddressesRegex2, AddressesRegex3, AddressesRegex4, AddressesRegex5
+        global AddressesRegex , AddressesRegex2, AddressesRegex3
+        global AddressesRegex4, AddressesRegex5, AddressesRegex6, AddressesRegex7
         global PhoneNumberRegex1, PhoneNumberRegex2, PhoneNumberRegex3
         global PhoneNumberRegex4, PhoneNumberRegex5, PhoneNumberRegex6
 
@@ -30,6 +31,8 @@ def main():
         AddressesRegex3 = r"^\d{1,5}.\w{1,20}.\w{1,10}.\w{2}\n\w{1,20},.\w{2}.\d{1,5}"
         AddressesRegex4 = r"^\d{1,5}.\w{1,2}\W{1}.\w{1,20}.\w{1,20}.\w{1,20}.\w{1,20},.\w{2}.\d{1,5}"
         AddressesRegex5 = r"^\d{1,5}.\w{1,2}\W{1}.\w{1,20}.\w{1,20}.\n.\w{1,20}.\w{1,20},.\w{2}.\d{1,5}"
+        AddressesRegex6 = r"\d{0,5}.\w{0,20}.\w{0,20}\n[A-Z]{1}\w{1,20}..?[A-Z]{0,2}.\d{0,5}"
+        AddressesRegex7 = r"\d{1,5}.\w{1,20}.[A-Z]{1}[a-z]{1,20}..?[A-Z]{1}[a-z]{1,20}..?[A-Z]{1,2}.\d{1,5}"
 
         PhoneNumberRegex1 = r"^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
         PhoneNumberRegex2 = r"^\+?1?-\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
@@ -99,7 +102,9 @@ def main():
                                  PhoneNumberRegex4, PhoneNumberRegex5, PhoneNumberRegex6]
         NameRegexList = [NameRegex1, NameRegex2, NameRegex3, NameRegex4, NameRegex5, NameRegex6]
 
-        AddressesRegexList = [AddressesRegex, AddressesRegex2, AddressesRegex3, AddressesRegex4, AddressesRegex5]
+        AddressesRegexList = [AddressesRegex, AddressesRegex2, AddressesRegex3,
+                              AddressesRegex4, AddressesRegex5, AddressesRegex6,
+                              AddressesRegex7]
 
 
         Replace = [" ", "'", ",", "[", "]", "(", ")","-", ".","+"]
@@ -107,7 +112,58 @@ def main():
 
     # Response = requests.get('https://www.progressive.com/contact-us')
     #Response = requests.get("https://www.unileverusa.com/contact")  # | works
-    Response = requests.get("https://www.peoplemetrics.com/contact")  # | Works
+    #Response = requests.get("https://www.peoplemetrics.com/contact")  # | Works
+    #Response = requests.get(
+    # +
+    #
+    # .0
+    # "https://www.pge.com/en_US/residential/customer-service/help/contact-pge-landing/contact-us.page") # | Works
+    #Response = requests.get()
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+        'Accept': "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        'Accept-Encoding': "gzip, deflate, br",
+        'Accept-Language': "en-US,en;q=0.5",
+
+    }
+
+
+
+    def Input():
+        global URL
+
+        #URL = input('Please Enter URL: ')
+
+        URL = "https://aetna.com/about-us/contact-aetna.html"
+
+        if URL.startswith('https://'):
+            global FileName
+            if URL[8:].startswith('www.'):
+                if ((URL[8:].count('/'))) >= 1:
+                    Index = URL[8:].index('/')
+                    FileName = URL[12:Index+8]
+
+                if ((URL[8:].count('/'))) == 0:
+                    FileName = URL[12:]
+
+            else:
+                if ((URL[8:].count('/'))) >= 1:
+                    Index = URL[8:].index('/')
+                    FileName = URL[8:Index + 8]
+
+                if ((URL[8:].count('/'))) == 0:
+                    FileName = URL[8:]
+
+        print(FileName)
+
+
+
+    Input()
+
+
+    Response = requests.get(f"{URL}", headers=headers) # | Does Not Work
+
 
     HtmlContent = Response.text
 
@@ -119,7 +175,9 @@ def main():
         def PhoneNumberTag():
             for tagU1 in soup.find_all(tags):
                 PhoneNumber = tagU1.get_text().strip()
+
                 for PhoneRegex in PhoneNumberRegexList:
+
                     if re.match(PhoneRegex, PhoneNumber):
                         PhoneNumbersToBeFiltered.append(PhoneNumber)
 
@@ -146,7 +204,6 @@ def main():
                     if PhonenumbersToBeFormated not in PhoneNumbersFormatted:
                         PhoneNumbersFormatted.append(PhonenumbersToBeFormated)
 
-        PhoneNumberTag()
 
         def EmailTag():
 
@@ -165,29 +222,22 @@ def main():
                 if i not in EmailsFiltered:
                     EmailsFiltered.append(i)
 
-        EmailTag()
-
         def AddressesTag():
 
             for tagU3 in soup.find_all(tags):
                 Addresses = tagU3.get_text().strip()
-                for AddressesRegexs in AddressesRegexList:
-                    if re.match(AddressesRegexs, Addresses):
-
-                        if Addresses not in AddressesToBeFiltered:
-
-                            AddressesToBeFiltered.append(Addresses)
-                        else:
-                            continue
-
+                lines = [line.strip() for line in Addresses.splitlines() if line.strip()]
+                for pattern in AddressesRegexList:
+                        for line in lines:
+                            if re.search(pattern, line):
+                                if line not in AddressesToBeFiltered:
+                                    AddressesToBeFiltered.append(line)
 
             indices = [index for index, address in enumerate(AddressesToBeFiltered) if
                        any(prefix in address for prefix in StreetEndingsLong)]
 
             for i in indices:
                 AddressesFiltered.append(AddressesToBeFiltered[i])
-
-        AddressesTag()
 
         def NamesTag():
 
@@ -220,6 +270,10 @@ def main():
             for i in APIOutputToString.split():
                 if re.match(NameRegex1, i):
                     APIOutputFiltered.append(i)
+
+        PhoneNumberTag()
+        EmailTag()
+        AddressesTag()
         NamesTag()
     FilterByTag()
 
@@ -228,8 +282,13 @@ def main():
         def PhoneNumbersOutput():
             if len(PhoneNumbersFiltered) == 0:
                 print("No Phone Numbers Found")
-                with open("outputs.txt", "w") as file:
-                    file.write("No Phone Numbers Found")
+
+                if os.path.exists(f'{FileName}.txt'):
+                    with open(f"{FileName}.txt", "a") as file:
+                        file.write("No Phone Numbers Found\n")
+                else:
+                    with open(f"{FileName}.txt", "x") as file:
+                        file.write("No Phone Numbers Found\n")
 
             else:
                 for x in Replace:
@@ -238,17 +297,27 @@ def main():
 
                 print(PhoneNumberOutput)
 
-                with open("outputs.txt", "w") as file:
-                    file.write(PhoneNumberOutput + "\n")
+                if os.path.exists(f'{FileName}.txt'):
+                    with open(f"{FileName}.txt", "a") as file:
+                        file.write(f'{PhoneNumberOutput}\n')
 
-        PhoneNumbersOutput()
+                else:
+                    with open(f"{FileName}.txt", "x") as file:
+                        file.write(f'{PhoneNumberOutput}\n')
+
 
         def EmailsOutput():
 
             if len(EmailsFiltered) == 0:
                 print("No Emails Found")
-                with open("outputs.txt", "a") as file:
-                    file.write("No Emails Found")
+
+                if os.path.exists(f'{FileName}.txt'):
+                    with open(f"{FileName}.txt", "a") as file:
+                        file.write("No Emails Found\n")
+                else:
+                    with open(f"{FileName}.txt", "x") as file:
+                        file.write("No Emails Found\n")
+
             else:
                 for x in Replace:
                     EmailOutput = ("Emails Found: " + str(EmailsFiltered).replace("[", "")
@@ -256,19 +325,28 @@ def main():
 
                 print(EmailOutput)
 
-                with open("outputs.txt", "a") as file:
-                    file.write(EmailOutput + "\n")
+                if os.path.exists(f'{FileName}.txt'):
+                    with open(f"{FileName}.txt", "a") as file:
+                        file.write(f'{EmailOutput}\n')
+
+                else:
+                    with open(f"{FileName}.txt", "x") as file:
+                        file.write(f'{EmailOutput}\n')
 
 
-        EmailsOutput()
 
 
         def AddressesOutput():
 
             if len(AddressesFiltered) == 0:
                 print("No Addresses Found")
-                with open("outputs.txt", "a") as file:
-                    file.write("No Addresses Found")
+
+                if os.path.exists(f'{FileName}.txt'):
+                    with open(f"{FileName}.txt", "a") as file:
+                        file.write("No Addresses Found\n")
+                else:
+                    with open(f"{FileName}.txt", "x") as file:
+                        file.write("No Addresses Found\n")
 
             else:
                 for x in Replace:
@@ -277,16 +355,24 @@ def main():
 
                 print(AddressesOutput)
 
-                with open("outputs.txt", "a") as file:
-                    file.write(AddressesOutput + "\n")
+                if os.path.exists(f'{FileName}.txt'):
+                    with open(f"{FileName}.txt", "a") as file:
+                        file.write(f'{AddressesOutput}\n')
 
-        AddressesOutput()
+                else:
+                    with open(f"{FileName}.txt", "x") as file:
+                        file.write(f'{AddressesOutput}\n')
 
         def NamesOutput():
             if len(APIOutputFiltered) == 0:
                 print("No Names Found")
-                with open("outputs.txt", "a") as file:
-                    file.write("No Names Found")
+
+                if os.path.exists(f'{FileName}.txt'):
+                    with open(f"{FileName}.txt", "a") as file:
+                        file.write('No Names Found\n')
+                else:
+                    with open(f"{FileName}.txt", "x") as file:
+                        file.write('No Names Found\n')
             else:
                 for x in Replace:
                     NamesOutput = ("Names Found: " + str(APIOutputFiltered).replace("[", "")
@@ -294,13 +380,28 @@ def main():
 
                 print(NamesOutput)
 
-                with open("outputs.txt", "a") as file:
-                    file.write(NamesOutput + "\n")
 
+
+                if os.path.exists(f'{FileName}.txt'):
+                    with open(f"{FileName}.txt", "a") as file:
+                        file.write(f'{NamesOutput}\n')
+
+                else:
+                    with open(f"{FileName}.txt", "x") as file:
+                        file.write(f'{NamesOutput}\n')
+
+
+
+        PhoneNumbersOutput()
+        EmailsOutput()
+        AddressesOutput()
         NamesOutput()
     Outputs()
 
 if __name__ == '__main__':
     main()
 
-    # This code will be a regex libreary for my OSINT project
+# WebParse 1.1.1
+
+# NotABird
+# CEO of Bird Inc.

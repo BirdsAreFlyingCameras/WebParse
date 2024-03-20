@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import os
 import urllib3
 import re
-
+import regex
 
 class Main:
 
@@ -23,14 +23,18 @@ class Main:
 
         self.EmailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
 
-        self.NameRegex1 = r"^[A-Z]{1}[a-z]{1,15}\s[A-Z]{1][a-z]{1,15}$"
+        self.NameRegex1 = r"^[A-Z]{1}[a-z]{1,15}\s[A-Z]{1}[a-z]{1,15}$"
         self.NameRegex2 = r"^[A-Z]{1}[a-z]{1,15}\s[A-Z]{1}[a-z]{1,15}\s[A-Z]{1}[a-z]{1,15}$"
-        self.NameRegex3 = r"^[A-Z]{1}[a-z]{1,15}\s[A-Z]{1}.\s[A-Z]{1}[a-z]{1,15}$"
+        self.NameRegex3 = r"^[A-Z]{1}[a-z]{1,15}\s[A-Z]{1}.?\s[A-Z]{1}[a-z]{1,15}$"
         self.NameRegex4 = r'^(?:Ms|Mrs|Mr|Miss|Master|Mx|Dr|Prof|Rev|Hon|Col|Gen|Maj|Capt|Sen|Rep|Esq)\.[A-Z]\w{1,15}$'
         self.NameRegex5 = r'^(?:Ms|Mrs|Mr|Miss|Master|Mx|Dr|Prof|Rev|Hon|Col|Gen|Maj|Capt|Sen|Rep|Esq)\.[A-Z]{1}[a-z]{1,' \
                           r'15}\s[A-Z]{1}[a-z]{0,15}$'
         self.NameRegex6 = r'^(?:Ms|Mrs|Mr|Miss|Master|Mx|Dr|Prof|Rev|Hon|Col|Gen|Maj|Capt|Sen|Rep|Esq)\.[A-Z]{1}[a-z]{1,' \
                           r'15}\s[A-Z]{1}[a-z]{0,15}\s[A-Z]{1}[a-z]{0,15}$'
+        self.NameRegex7 = r'(?:Ms|Mrs|Mr|Miss|Master|Mx|Dr|Prof|Rev|Hon|Col|Gen|Maj|Capt|Sen|Rep|Esq)\.{0,1}(\s{0,1}\.{0,1})[A-Z]{1}[a-z]{1,15}\s[A-Z]{0,1}[a-z]{0,15}\s?[A-Z]{0,1}[a-z]{0,15}'
+
+
+
 
         self.AddressRegex1 = r"^(\d{1,5})\s(\w{1,20})\s?(\w{1,20}){0,}\s(\w{1,10})(\.?)(,?)\s(\w{1,20})\s?(\w{1,20}){0,}(,?)\s(\w{2}?)(,?)\s(\d{1,9})$"
         self.AddressRegex2 = r"^(\d{1,5})\s(\w{1,20})\s?(\w{1,20}){0,}(,?)\s(\w{1,10})(\.?)(,?)\s(\w{1,10}){0,}(\.?)\s(\d{1,10})(,?)\s(\w{1,20})\s?(\w{1,20}){0,}(,?)\s(\w{2}?)(,?)\s(\d{1,9})$"
@@ -58,13 +62,16 @@ class Main:
         self.AddressesRegex24 = r"^(\w{1,})\s([A-Z][a-z]{1,})\s([A-Z][a-z]{1,})\s(\w{1,2})(,)\s([A-Z][a-z]{1,})\s([A-Z][a-z]{1,})(,)\s([A-Z]{2})\s(\d{1,})(,)\s(\w{1,})"
         self.AddressesRegex25 = r"^(\w{1,})\s([A-Z][a-z]{1,})\s(\w{1,})(,)\s([A-Z][a-z]{1,})\s([A-Z][a-z]{1,})(,)\s([A-Z]{2})\s(\d{1,})(,)\s(\w{1,})"
         self.AddressesRegex26 = r"^(\w{1,})\s(\w{1,})\s(\d{1,}\w{1,})\s(\w{1,})(,)\s([A-Z][a-z]{1,})\s([A-Z][a-z]{1,})(,)\s([A-Z]{1,})\s(\d{1,})(,)\s(\w{1,})"
+        self.AddressesRegex27 = r"^(\w{1,})\s(\w{1,})\s(\w{0,})\s(\w{0,}),\s([A-Z]\w{1,}),\s([A-Z]{2})\s(\d{5,})$"
 
         self.PhoneNumberRegex1 = r"^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
         self.PhoneNumberRegex2 = r"^\+?1?-\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
         self.PhoneNumberRegex3 = r"\+?1?\s?\(?\d{3}\)?\s]?\d{3}\s]?\d{4}$"
         self.PhoneNumberRegex4 = r"^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}.$"
         self.PhoneNumberRegex5 = r"^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
-        self.PhoneNumberRegex6 = r"^\d{10}"
+        self.PhoneNumberRegex6 = r"^([+]?\d?)([(]?)([+]?\d?)([–]?)( ?)(\d{3})([–]?)( ?)(\d{3})([–]?)( ?)(\d{4})([)]?)$"
+        self.PhoneNumberRegex7 = r"^([(]?)(\d{3})([)]?)\s(\d{3})(–|-?)(\d{4})$"
+        self.PhoneNumberRegex8 = r"^\d{10}"
 
         self.StreetEndingsLong = [
             "Avenue", "Boulevard", "Drive", "Lane",
@@ -95,10 +102,11 @@ class Main:
         ]
 
         self.PhoneNumberRegexList = [self.PhoneNumberRegex1, self.PhoneNumberRegex2, self.PhoneNumberRegex3,
-                                     self.PhoneNumberRegex4, self.PhoneNumberRegex5, self.PhoneNumberRegex6]
+                                     self.PhoneNumberRegex4, self.PhoneNumberRegex5, self.PhoneNumberRegex6,
+                                     self.PhoneNumberRegex7, self.PhoneNumberRegex8]
 
         self.NameRegexList = [self.NameRegex1, self.NameRegex2, self.NameRegex3,
-                              self.NameRegex4, self.NameRegex5, self.NameRegex6]
+                              self.NameRegex4, self.NameRegex5, self.NameRegex6, self.NameRegex7]
 
         self.AddressRegexList = [self.AddressRegex1, self.AddressRegex2, self.AddressRegex3, self.AddressRegex4,
                                  self.AddressesRegex5,
@@ -113,10 +121,12 @@ class Main:
                                  self.AddressesRegex20,
                                  self.AddressesRegex21,
                                  self.AddressesRegex22, self.AddressesRegex23, self.AddressesRegex24,
-                                 self.AddressesRegex25,
-                                 self.AddressesRegex26]
+                                 self.AddressesRegex25, self.AddressesRegex26, self.AddressesRegex27]
 
         self.Replace = [" ", "'", ",", "[", "]", "(", ")", "-", ".", "+"]
+
+        self.StringsDebugList = [] # REMOVE JUST FOR TESTING
+        self.NamesMatchedButNotPassed = [] # REMOVE JUST FOR TESTING
 
         self.GetHtml()
 
@@ -148,54 +158,69 @@ class Main:
         self.EmailsList = []
         self.PhoneNumbersList = []
         self.AddressesList = []
+        self.NamesList = []
+
+
+    #|=|=| EMAIL MATCH CODE START |=|=|#
 
         # print(self.EmailRegex)
-        for String in (self.Strings):
-            print(String)
-
+        for String in self.Strings:
             # print(f"Pattern: {self.EmailRegex} String: {String}")
             if re.search(self.EmailRegex, String):
                 if String not in self.EmailsList:
                     self.EmailsList.append(String)
+
+    #|=|=| EMAIL MATCH CODE END |=|=|#
+
+
+
+    #|=|=| PHONE NUMBER MATCH CODE START |=|=|#
 
             for Regex in self.PhoneNumberRegexList:
                 if re.search(Regex, String):
                     if String not in self.PhoneNumbersList:
                         self.PhoneNumbersList.append(String)
 
+    #|=|=| PHONE NUMBER MATCH CODE END |=|=|#
+
+
+
+    #|=|=| ADDRESS MATCH CODE START |=|=|#
+
+        for String in self.Strings:
             for Regex in self.AddressRegexList:
+
+                #if String not in self.DebugAddressStrings:
+                #    #print(f"String: {String}")
+                #    self.DebugAddressStrings.append(String)
+
                 if String in self.AddressesList:
                     continue
                 else:
-                    if re.match(Regex, String):
+                    if regex.fullmatch(Regex, String):
                         if String not in self.AddressesList:
                             self.AddressesList.append(String)
-
-
-        #for String1, String2 in zip(self.Strings[0::2], self.Strings[1::2]):
-        #    print(f"String 1: {String1}")
-        #    print(f"String 2: {String2}")
-        #    print(f"String 2: {String2}")
-        #    print(f"String 1: {String1}")
-        #    for Regex in self.AddressRegexList:
-        #        if f"{String1}, {String2}" in self.AddressesList:
-        #            continue
-        #        else:
-        #            if re.match(Regex, f"{String1}, {String2}"):
-        #                if f"{String1} {String2}" not in self.AddressesList:
-        #                    self.AddressesList.append(f"{String1}, {String2}")
 
         for Index, String in enumerate(self.Strings):
             for Regex in self.AddressRegexList:
                 try:
                     NewString = f"{String}, {self.Strings[Index+1]}"
-                    print(f"Index: {Index} String: {String}")
+
+                    #if NewString not in self.DebugAddressStrings:
+                    #    #print(f"Index: {Index} String: {String}")
+                    #    self.DebugAddressStrings.append(NewString)
+
                     if NewString in self.AddressesList:
                         continue
                     else:
-                        if re.match(Regex, NewString):
+                        if regex.fullmatch(Regex, NewString, timeout=1):
                             if NewString not in self.AddressesList:
                                 self.AddressesList.append(NewString)
+                        else:
+                            continue
+                except TimeoutError as e:
+                    print(e)
+                    continue
                 except:
                     continue
 
@@ -209,10 +234,82 @@ class Main:
             except:
                 continue
 
-
-        print(self.EmailsList)
-        print(self.PhoneNumbersList)
-        print(self.AddressesList)
+    #|=|=| ADDRESS MATCH CODE END |=|=|#
 
 
-Main(URL="https://www.wellsfargo.com/help/addresses/")
+
+    #|=|=| NAME MATCH CODE START |=|=|#
+
+        StringsForNames = self.Strings
+
+        for String in StringsForNames:
+            for Regex in self.NameRegexList:
+
+                if String in self.NamesList:
+                    continue
+
+                SubStrings = String.split(" ")
+
+                if String not in self.StringsDebugList:
+                    self.StringsDebugList.append(String)
+
+                if String == "Ed Evans":
+                    print("FLAG!!!!")
+
+                if re.fullmatch(Regex, String):
+                    for SubString in SubStrings:
+                            #print(f"String: {String}")
+                            #print(f"Sub Strings: {SubStrings}")
+
+                            if requests.get(f"https://api.dictionaryapi.dev/api/v2/entries/en/{SubString}").status_code == 200:
+                                #print(f"String: {String}")
+                                #print(f"Sub Strings: {SubStrings}")
+                                if SubString == SubStrings[-1]:
+
+                                    IndexToRemove = StringsForNames.index(String)
+                                    StringsForNames.pop(IndexToRemove)
+                                    self.NamesMatchedButNotPassed.append(String)
+                                    break
+                                else:
+                                    continue
+
+
+                            if requests.get(f"https://api.dictionaryapi.dev/api/v2/entries/en/{SubString}").status_code == 404:
+                                if String not in self.NamesList:
+                                    self.NamesList.append(String)
+
+    #|=|=| NAME MATCH CODE END |=|=|#
+
+
+
+    #|=|=| OUTPUT CODE START |=|=|#
+
+        print(f"Emails: {self.EmailsList}")
+        print(f"Phone Numbers: {self.PhoneNumbersList}")
+        print(f"Addresses: {self.AddressesList}")
+        print(f"Names: {self.NamesList}")
+    #|=|=| OUTPUT CODE END |=|=|#
+
+
+
+    #|=|=| DEBUG CODE START |=|=|#
+
+        print(self.NamesMatchedButNotPassed)
+        if os.path.exists('DebugAddressStrings.txt'):
+            os.remove('DebugAddressStrings.txt')
+
+        with open('DebugAddressStrings.txt', 'x', encoding='utf-8') as f:
+            for String in self.StringsDebugList:
+                try:
+                    f.write(f"'{String}',")
+                    f.write('\n')
+                except:
+                    continue
+
+    #|=|=| DEBUG CODE END |=|=|#
+
+
+Main(URL="https://it.tamu.edu/about/leadership/index.php")
+#https://www.wellsfargo.com/help/addresses/ | Works
+#https://www.apple.com/contact/ | Works
+#https://www.schwab.com/contact-us | https://www.schwab.com/contact-us | Works

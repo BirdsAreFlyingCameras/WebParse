@@ -250,11 +250,12 @@ class Main:
 
                 SubStrings = String.split(" ")
 
+                # ||| DEBUG CODE START |||
+
                 if String not in self.StringsDebugList:
                     self.StringsDebugList.append(String)
 
-                if String == "Ed Evans":
-                    print("FLAG!!!!")
+                # ||| DEBUG CODE END |||
 
                 if re.fullmatch(Regex, String):
                     for SubString in SubStrings:
@@ -262,8 +263,10 @@ class Main:
                             #print(f"Sub Strings: {SubStrings}")
 
                             if requests.get(f"https://api.dictionaryapi.dev/api/v2/entries/en/{SubString}").status_code == 200:
+
                                 #print(f"String: {String}")
                                 #print(f"Sub Strings: {SubStrings}")
+
                                 if SubString == SubStrings[-1]:
 
                                     IndexToRemove = StringsForNames.index(String)
@@ -273,12 +276,67 @@ class Main:
                                 else:
                                     continue
 
-
                             if requests.get(f"https://api.dictionaryapi.dev/api/v2/entries/en/{SubString}").status_code == 404:
                                 if String not in self.NamesList:
                                     self.NamesList.append(String)
 
-    #|=|=| NAME MATCH CODE END |=|=|#
+
+        print(self.NamesList) # ||| DEBUG REMOVE AFTER
+
+        # ||| START OF TEST CODE FOR PyEnhance REMOVE WHEN DONE!!! |||
+
+        NamesFromFile = []
+
+        with open('Names.txt', 'r') as f:
+
+            for Name in f:
+                NamesFromFile.append(Name.replace('\n', ''))
+
+
+        # ||| END OF TEST CODE FOR PyEnhance REMOVE WHEN DONE!!! |||
+
+
+
+        NamesToRemove = []
+
+        for Name in self.NamesList:
+
+            print(f"Name: {Name}")# ||| DEBUG REMOVE AFTER
+            print(f"Names List: {self.NamesList}")# ||| DEBUG REMOVE AFTER
+
+
+            NameSubs = str(Name).split(' ')
+            InDict = []
+            NotInDict = []
+
+            for SubName in NameSubs:
+
+                if requests.get(f"https://www.dictionary.com/browse/{SubName}").status_code == 200:
+                    InDict.append(SubName)
+
+                if requests.get(f"https://www.dictionary.com/browse/{SubName}").status_code == 200 and SubName in NamesFromFile:
+                    NotInDict.append(SubName)
+
+                if requests.get(f"https://www.dictionary.com/browse/{SubName}").status_code == 404:
+                    NotInDict.append(SubName)
+
+
+            # ||| DEBUG START |||
+
+            print(f"Name: {Name}")
+            print(f"In the dict: {InDict}")
+            print(f"Not In the dict: {NotInDict}")
+
+            # ||| DEBUG END |||
+
+
+            if len(NotInDict) == 0:
+                NamesToRemove.append(Name)
+
+        for NameToRemove in NamesToRemove:
+            self.NamesList.remove(NameToRemove)
+
+        #|=|=| NAME MATCH CODE END |=|=|#
 
 
 
@@ -288,13 +346,24 @@ class Main:
         print(f"Phone Numbers: {self.PhoneNumbersList}")
         print(f"Addresses: {self.AddressesList}")
         print(f"Names: {self.NamesList}")
+
+        print('\n')
+
+
+
     #|=|=| OUTPUT CODE END |=|=|#
 
 
 
     #|=|=| DEBUG CODE START |=|=|#
 
+        #for Name in self.NamesList:
+        #    NameSub = str(Name).split(' ')
+        #    print(f"Full Name: {Name}")
+        #    print(f"Sub Strings: {NameSub}")
+
         print(self.NamesMatchedButNotPassed)
+
         if os.path.exists('DebugAddressStrings.txt'):
             os.remove('DebugAddressStrings.txt')
 
@@ -310,6 +379,7 @@ class Main:
 
 
 Main(URL="https://it.tamu.edu/about/leadership/index.php")
+
 #https://www.wellsfargo.com/help/addresses/ | Works
 #https://www.apple.com/contact/ | Works
 #https://www.schwab.com/contact-us | https://www.schwab.com/contact-us | Works

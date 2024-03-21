@@ -1,9 +1,11 @@
+import PyEnhance.Loading
 import requests
 from bs4 import BeautifulSoup
 import os
 import urllib3
 import re
 import regex
+from PyEnhance import Loading
 
 class Main:
 
@@ -127,11 +129,18 @@ class Main:
 
         self.StringsDebugList = [] # REMOVE JUST FOR TESTING
         self.NamesMatchedButNotPassed = [] # REMOVE JUST FOR TESTING
-
         self.GetHtml()
 
-    def GetHtml(self):
+    def LoadingI(self):
+        Loading = PyEnhance.Loading.Loading()
 
+        self.LoadingEmails = Loading.Spin(Text="Getting Emails")
+        self.LoadingAddresses = Loading.Spin(Text="Getting Addresses")
+        self.LoadingPhoneNumbers = Loading.Spin("Getting Phone Numbers")
+        self.LoadingNames = Loading.Spin(Text="Getting Names")
+
+
+    def GetHtml(self):
         Response = requests.get(f"{self.URL}", headers=self.WebHeaders, verify=False, )
 
         self.HtmlContent = Response.text
@@ -162,6 +171,9 @@ class Main:
 
 
     #|=|=| EMAIL MATCH CODE START |=|=|#
+        self.EmailLoading = PyEnhance.Loading.Loading()
+
+        self.EmailLoading.Spin(Text="Getting Emails")
 
         # print(self.EmailRegex)
         for String in self.Strings:
@@ -176,6 +188,10 @@ class Main:
 
     #|=|=| PHONE NUMBER MATCH CODE START |=|=|#
 
+        self.EmailLoading.Stop()
+        self.PhoneNumberLoading = PyEnhance.Loading.Loading()
+        self.PhoneNumberLoading.Spin("Getting Phone Numbers")
+        for String in self.Strings:
             for Regex in self.PhoneNumberRegexList:
                 if re.search(Regex, String):
                     if String not in self.PhoneNumbersList:
@@ -187,6 +203,10 @@ class Main:
 
     #|=|=| ADDRESS MATCH CODE START |=|=|#
 
+
+        self.PhoneNumberLoading.Stop()
+        self.AddressLoading = PyEnhance.Loading.Loading()
+        self.AddressLoading.Spin("Getting Addresses")
         for String in self.Strings:
             for Regex in self.AddressRegexList:
 
@@ -240,6 +260,10 @@ class Main:
 
     #|=|=| NAME MATCH CODE START |=|=|#
 
+        self.AddressLoading.Stop()
+        self.NameLoading = PyEnhance.Loading.Loading()
+        self.NameLoading.Spin("Getting Names")
+
         StringsForNames = self.Strings
 
         for String in StringsForNames:
@@ -281,7 +305,7 @@ class Main:
                                     self.NamesList.append(String)
 
 
-        print(self.NamesList) # ||| DEBUG REMOVE AFTER
+        #print(self.NamesList) # ||| DEBUG REMOVE AFTER
 
         # ||| START OF TEST CODE FOR PyEnhance REMOVE WHEN DONE!!! |||
 
@@ -301,8 +325,8 @@ class Main:
 
         for Name in self.NamesList:
 
-            print(f"Name: {Name}")# ||| DEBUG REMOVE AFTER
-            print(f"Names List: {self.NamesList}")# ||| DEBUG REMOVE AFTER
+            #print(f"Name: {Name}")# ||| DEBUG REMOVE AFTER
+            #print(f"Names List: {self.NamesList}")# ||| DEBUG REMOVE AFTER
 
 
             NameSubs = str(Name).split(' ')
@@ -323,9 +347,9 @@ class Main:
 
             # ||| DEBUG START |||
 
-            print(f"Name: {Name}")
-            print(f"In the dict: {InDict}")
-            print(f"Not In the dict: {NotInDict}")
+            #print(f"Name: {Name}")
+            #print(f"In the dict: {InDict}")
+            #print(f"Not In the dict: {NotInDict}")
 
             # ||| DEBUG END |||
 
@@ -335,6 +359,8 @@ class Main:
 
         for NameToRemove in NamesToRemove:
             self.NamesList.remove(NameToRemove)
+
+        self.NameLoading.Stop()
 
         #|=|=| NAME MATCH CODE END |=|=|#
 
@@ -362,7 +388,7 @@ class Main:
         #    print(f"Full Name: {Name}")
         #    print(f"Sub Strings: {NameSub}")
 
-        print(self.NamesMatchedButNotPassed)
+        #print(self.NamesMatchedButNotPassed)
 
         if os.path.exists('DebugAddressStrings.txt'):
             os.remove('DebugAddressStrings.txt')
@@ -378,8 +404,9 @@ class Main:
     #|=|=| DEBUG CODE END |=|=|#
 
 
-Main(URL="https://it.tamu.edu/about/leadership/index.php")
+Main(URL="https://www.wellsfargo.com/help/addresses/")
 
-#https://www.wellsfargo.com/help/addresses/ | Works
-#https://www.apple.com/contact/ | Works
-#https://www.schwab.com/contact-us | https://www.schwab.com/contact-us | Works
+# https://www.wellsfargo.com/help/addresses/ | Works
+# https://www.apple.com/contact/ | Works
+# https://www.schwab.com/contact-us | https://www.schwab.com/contact-us | Works
+# https://it.tamu.edu/about/leadership/index.php | Works

@@ -1,11 +1,12 @@
 import PyEnhance.Loading
 import requests
+import unicodedata
 from bs4 import BeautifulSoup
 import os
 import urllib3
 import re
 import regex
-from PyEnhance import Loading
+from PyEnhance import Loading, Timer
 
 class Main:
 
@@ -256,7 +257,24 @@ class Main:
 
     #|=|=| ADDRESS MATCH CODE END |=|=|#
 
+        # ||| START OF TEST CODE FOR PyEnhance REMOVE WHEN DONE!!! |||
 
+        NamesFromFile = []
+        CommonWordsFromFile = []
+
+        with open('Names.txt', 'r') as f:
+
+            for Name in f:
+                NamesFromFile.append(Name.replace('\n', ''))
+
+
+        with open('CommonWords.txt', 'r') as f:
+
+            for Word in f:
+                CommonWordsFromFile.append(Word.replace('\n', ''))
+
+
+        # ||| END OF TEST CODE FOR PyEnhance REMOVE WHEN DONE!!! |||
 
     #|=|=| NAME MATCH CODE START |=|=|#
 
@@ -264,7 +282,11 @@ class Main:
         self.NameLoading = PyEnhance.Loading.Loading()
         self.NameLoading.Spin("Getting Names")
 
-        StringsForNames = self.Strings
+        StringsForNames = [unicodedata.normalize("NFKD", i) for i in self.Strings]
+        StringsForNames = list(dict.fromkeys(StringsForNames))
+
+        TimerI = Timer.Timer()
+        TimerI.Start()
 
         for String in StringsForNames:
             for Regex in self.NameRegexList:
@@ -276,73 +298,64 @@ class Main:
 
                 # ||| DEBUG CODE START |||
 
-                if String not in self.StringsDebugList:
-                    self.StringsDebugList.append(String)
+                #if String not in self.StringsDebugList:
+                #    self.StringsDebugList.append(String)
 
                 # ||| DEBUG CODE END |||
 
+                InDict = []
+                NotInDict = []
+
+
                 if re.fullmatch(Regex, String):
                     for SubString in SubStrings:
-                            #print(f"String: {String}")
-                            #print(f"Sub Strings: {SubStrings}")
 
-                            if requests.get(f"https://api.dictionaryapi.dev/api/v2/entries/en/{SubString}").status_code == 200:
+                        # ||| DEBUG CODE START |||
 
-                                #print(f"String: {String}")
-                                #print(f"Sub Strings: {SubStrings}")
+                        #print(f"In Dict: {InDict}")
+                        #print(f"Not In Dict: {NotInDict}")
 
-                                if SubString == SubStrings[-1]:
+                        # ||| DEBUG CODE END |||
 
-                                    IndexToRemove = StringsForNames.index(String)
-                                    StringsForNames.pop(IndexToRemove)
-                                    self.NamesMatchedButNotPassed.append(String)
-                                    break
-                                else:
-                                    continue
+                        if requests.get(f"https://www.dictionary.com/browse/{SubString}").status_code == 200:
+                            InDict.append(SubString)
 
-                            if requests.get(f"https://api.dictionaryapi.dev/api/v2/entries/en/{SubString}").status_code == 404:
-                                if String not in self.NamesList:
-                                    self.NamesList.append(String)
+                        if requests.get(
+                                f"https://www.dictionary.com/browse/{SubString}").status_code == 200 and SubString in NamesFromFile:
+                            NotInDict.append(SubString)
 
+                        if requests.get(f"https://www.dictionary.com/browse/{SubString}").status_code == 404:
 
-        #print(self.NamesList) # ||| DEBUG REMOVE AFTER
+                            NotInDict.append(SubString)
 
-        # ||| START OF TEST CODE FOR PyEnhance REMOVE WHEN DONE!!! |||
+                if not len(NotInDict) == 0:
+                    if String not in self.NamesList:
+                        self.NamesList.append(String)
 
-        NamesFromFile = []
+        TimerI.Stop()
 
-        with open('Names.txt', 'r') as f:
-
-            for Name in f:
-                NamesFromFile.append(Name.replace('\n', ''))
-
-
-        # ||| END OF TEST CODE FOR PyEnhance REMOVE WHEN DONE!!! |||
-
-
-
-        NamesToRemove = []
+        self.NamesListFiltered = []
 
         for Name in self.NamesList:
 
-            #print(f"Name: {Name}")# ||| DEBUG REMOVE AFTER
-            #print(f"Names List: {self.NamesList}")# ||| DEBUG REMOVE AFTER
+            SubNames = str(Name).split(' ')
+
+            for Sub in SubNames:
+                if Sub.lower() in CommonWordsFromFile and Sub not in NamesFromFile:
+                    print(f"Name: {Name}")
+                    print(f"Sub: {Sub}")
+                    SubNames.remove(Sub)
+
+            if len(SubNames) > 1:
+                self.NamesListFiltered.append(Name)
 
 
-            NameSubs = str(Name).split(' ')
-            InDict = []
-            NotInDict = []
+        self.NameLoading.Stop()
 
-            for SubName in NameSubs:
+        #print(self.NamesList) # ||| DEBUG REMOVE AFTER
 
-                if requests.get(f"https://www.dictionary.com/browse/{SubName}").status_code == 200:
-                    InDict.append(SubName)
 
-                if requests.get(f"https://www.dictionary.com/browse/{SubName}").status_code == 200 and SubName in NamesFromFile:
-                    NotInDict.append(SubName)
 
-                if requests.get(f"https://www.dictionary.com/browse/{SubName}").status_code == 404:
-                    NotInDict.append(SubName)
 
 
             # ||| DEBUG START |||
@@ -353,12 +366,6 @@ class Main:
 
             # ||| DEBUG END |||
 
-
-            if len(NotInDict) == 0:
-                NamesToRemove.append(Name)
-
-        for NameToRemove in NamesToRemove:
-            self.NamesList.remove(NameToRemove)
 
         self.NameLoading.Stop()
 
@@ -371,13 +378,10 @@ class Main:
         print(f"Emails: {self.EmailsList}")
         print(f"Phone Numbers: {self.PhoneNumbersList}")
         print(f"Addresses: {self.AddressesList}")
-        print(f"Names: {self.NamesList}")
-
-        print('\n')
-
-
+        print(f"Names: {self.NamesListFiltered}")
 
     #|=|=| OUTPUT CODE END |=|=|#
+
 
 
 
@@ -404,9 +408,9 @@ class Main:
     #|=|=| DEBUG CODE END |=|=|#
 
 
-Main(URL="https://www.wellsfargo.com/help/addresses/")
+Main(URL="https://it.tamu.edu/about/leadership/index.php")
 
 # https://www.wellsfargo.com/help/addresses/ | Works
 # https://www.apple.com/contact/ | Works
-# https://www.schwab.com/contact-us | https://www.schwab.com/contact-us | Works
+# https://www.schwab.com/contact-us | Works
 # https://it.tamu.edu/about/leadership/index.php | Works

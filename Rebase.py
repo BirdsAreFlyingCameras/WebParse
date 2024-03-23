@@ -6,7 +6,7 @@ import os
 import urllib3
 import re
 import regex
-from PyEnhance import Loading, Timer
+from PyEnhance import Loading, Timer, Counter
 
 class Main:
 
@@ -128,8 +128,6 @@ class Main:
 
         self.Replace = [" ", "'", ",", "[", "]", "(", ")", "-", ".", "+"]
 
-        self.StringsDebugList = [] # REMOVE JUST FOR TESTING
-        self.NamesMatchedButNotPassed = [] # REMOVE JUST FOR TESTING
         self.GetHtml()
 
     def LoadingI(self):
@@ -155,12 +153,6 @@ class Main:
                 if String not in self.Strings:
                     self.Strings.append(String)
 
-        # for String in self.Strings:
-        #    print(String)
-
-        # for String in self.Strings:
-        #    print(String)
-
         self.Filter()
 
     def Filter(self):
@@ -176,9 +168,7 @@ class Main:
 
         self.EmailLoading.Spin(Text="Getting Emails")
 
-        # print(self.EmailRegex)
         for String in self.Strings:
-            # print(f"Pattern: {self.EmailRegex} String: {String}")
             if re.search(self.EmailRegex, String):
                 if String not in self.EmailsList:
                     self.EmailsList.append(String)
@@ -204,16 +194,11 @@ class Main:
 
     #|=|=| ADDRESS MATCH CODE START |=|=|#
 
-
         self.PhoneNumberLoading.Stop()
         self.AddressLoading = PyEnhance.Loading.Loading()
         self.AddressLoading.Spin("Getting Addresses")
         for String in self.Strings:
             for Regex in self.AddressRegexList:
-
-                #if String not in self.DebugAddressStrings:
-                #    #print(f"String: {String}")
-                #    self.DebugAddressStrings.append(String)
 
                 if String in self.AddressesList:
                     continue
@@ -226,10 +211,6 @@ class Main:
             for Regex in self.AddressRegexList:
                 try:
                     NewString = f"{String}, {self.Strings[Index+1]}"
-
-                    #if NewString not in self.DebugAddressStrings:
-                    #    #print(f"Index: {Index} String: {String}")
-                    #    self.DebugAddressStrings.append(NewString)
 
                     if NewString in self.AddressesList:
                         continue
@@ -285,9 +266,6 @@ class Main:
         StringsForNames = [unicodedata.normalize("NFKD", i) for i in self.Strings]
         StringsForNames = list(dict.fromkeys(StringsForNames))
 
-        TimerI = Timer.Timer()
-        TimerI.Start()
-
         for String in StringsForNames:
             for Regex in self.NameRegexList:
 
@@ -296,43 +274,31 @@ class Main:
 
                 SubStrings = String.split(" ")
 
-                # ||| DEBUG CODE START |||
-
-                #if String not in self.StringsDebugList:
-                #    self.StringsDebugList.append(String)
-
-                # ||| DEBUG CODE END |||
-
                 InDict = []
                 NotInDict = []
-
 
                 if re.fullmatch(Regex, String):
                     for SubString in SubStrings:
 
-                        # ||| DEBUG CODE START |||
-
-                        #print(f"In Dict: {InDict}")
-                        #print(f"Not In Dict: {NotInDict}")
-
-                        # ||| DEBUG CODE END |||
 
                         if requests.get(f"https://www.dictionary.com/browse/{SubString}").status_code == 200:
                             InDict.append(SubString)
+                            continue
 
                         if requests.get(
                                 f"https://www.dictionary.com/browse/{SubString}").status_code == 200 and SubString in NamesFromFile:
                             NotInDict.append(SubString)
+                            continue
 
                         if requests.get(f"https://www.dictionary.com/browse/{SubString}").status_code == 404:
-
                             NotInDict.append(SubString)
+                            continue
+
 
                 if not len(NotInDict) == 0:
                     if String not in self.NamesList:
                         self.NamesList.append(String)
 
-        TimerI.Stop()
 
         self.NamesListFiltered = []
 
@@ -342,30 +308,10 @@ class Main:
 
             for Sub in SubNames:
                 if Sub.lower() in CommonWordsFromFile and Sub not in NamesFromFile:
-                    print(f"Name: {Name}")
-                    print(f"Sub: {Sub}")
                     SubNames.remove(Sub)
 
             if len(SubNames) > 1:
                 self.NamesListFiltered.append(Name)
-
-
-        self.NameLoading.Stop()
-
-        #print(self.NamesList) # ||| DEBUG REMOVE AFTER
-
-
-
-
-
-            # ||| DEBUG START |||
-
-            #print(f"Name: {Name}")
-            #print(f"In the dict: {InDict}")
-            #print(f"Not In the dict: {NotInDict}")
-
-            # ||| DEBUG END |||
-
 
         self.NameLoading.Stop()
 
@@ -383,32 +329,7 @@ class Main:
     #|=|=| OUTPUT CODE END |=|=|#
 
 
-
-
-    #|=|=| DEBUG CODE START |=|=|#
-
-        #for Name in self.NamesList:
-        #    NameSub = str(Name).split(' ')
-        #    print(f"Full Name: {Name}")
-        #    print(f"Sub Strings: {NameSub}")
-
-        #print(self.NamesMatchedButNotPassed)
-
-        if os.path.exists('DebugAddressStrings.txt'):
-            os.remove('DebugAddressStrings.txt')
-
-        with open('DebugAddressStrings.txt', 'x', encoding='utf-8') as f:
-            for String in self.StringsDebugList:
-                try:
-                    f.write(f"'{String}',")
-                    f.write('\n')
-                except:
-                    continue
-
-    #|=|=| DEBUG CODE END |=|=|#
-
-
-Main(URL="https://it.tamu.edu/about/leadership/index.php")
+Main(URL="https://www.schwab.com/contact-us")
 
 # https://www.wellsfargo.com/help/addresses/ | Works
 # https://www.apple.com/contact/ | Works

@@ -329,10 +329,10 @@ class Main:
 
     #|=|=| OUTPUT CODE START |=|=|#
 
-        print(f"Emails: {' | '.join([Email for Email in self.EmailsList])}")
-        print(f"Phone Numbers: {' | '.join([PhoneNumber for PhoneNumber in self.PhoneNumbersList])}")
-        print(f"Addresses: {' | '.join([Address for Address in self.AddressesList])}")
-        print(f"Names: {' | '.join([Name for Name in self.NamesListFiltered])}")
+        #print(f"Emails: {' | '.join([Email for Email in self.EmailsList])}")
+        #print(f"Phone Numbers: {' | '.join([PhoneNumber for PhoneNumber in self.PhoneNumbersList])}")
+        #print(f"Addresses: {' | '.join([Address for Address in self.AddressesList])}")
+        #print(f"Names: {' | '.join([Name for Name in self.NamesListFiltered])}")
 
 
         LongestList = max(self.EmailsList, self.PhoneNumbersList, self.AddressesList, self.NamesList)
@@ -353,9 +353,9 @@ class Main:
         table = Table(title="Output")
 
         table.add_column("Emails", justify="right", style="cyan", no_wrap=True)
-        table.add_column("Phone Numbers", style="magenta")
+        table.add_column("Phone Numbers", style="magenta", no_wrap=True)
         table.add_column("Addresses", justify="right", style="green", no_wrap=True)
-        table.add_column("Names", justify="right", style="green")
+        table.add_column("Names", justify="right", style="orange1", no_wrap=True)
 
 
         for Email, PhoneNumber, Address, Name in zip(self.EmailsList, self.PhoneNumbersList, self.AddressesList,  self.NamesList):

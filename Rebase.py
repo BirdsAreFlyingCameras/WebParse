@@ -6,7 +6,7 @@ import os
 import urllib3
 import re
 import regex
-from PyEnhance import Loading, Timer, Counter
+from PyEnhance import Loading, Timer, Counter, WebTools
 
 class Main:
 
@@ -321,15 +321,40 @@ class Main:
 
     #|=|=| OUTPUT CODE START |=|=|#
 
-        print(f"Emails: {self.EmailsList}")
-        print(f"Phone Numbers: {self.PhoneNumbersList}")
-        print(f"Addresses: {self.AddressesList}")
-        print(f"Names: {self.NamesListFiltered}")
+        print(f"Emails: {' | '.join([Email for Email in self.EmailsList])}")
+        print(f"Phone Numbers: {' | '.join([PhoneNumber for PhoneNumber in self.PhoneNumbersList])}")
+        print(f"Addresses: {' | '.join([Address for Address in self.AddressesList])}")
+        print(f"Names: {' | '.join([Name for Name in self.NamesListFiltered])}")
 
     #|=|=| OUTPUT CODE END |=|=|#
 
+def Start():
+    WebTool = WebTools.WebTools()
 
-Main(URL="https://www.schwab.com/contact-us")
+    URL = input("Please Enter URL: ")
+
+    if not URL.startswith('https://') or URL.startswith('http://'):
+        print('\n')
+        ReformatChoice = input(f"{URL} Does not have a valid schema will need to reformat. Reformat URL to HTTP[1] or HTTPS[2]: ")
+
+        if ReformatChoice == "1":
+            URL = WebTool.RefactorHTTP(URL)
+        elif ReformatChoice == "2":
+            URL = WebTool.RefactorHTTPS(URL)
+        else:
+            print("Choice Not Valid")
+
+        print('\n')
+        Main(URL=URL)
+
+    else:
+        print('\n')
+        Main(URL=URL)
+
+if __name__ == '__main__':
+    Start()
+
+#Main(URL="https://www.schwab.com/contact-us")
 
 # https://www.wellsfargo.com/help/addresses/ | Works
 # https://www.apple.com/contact/ | Works

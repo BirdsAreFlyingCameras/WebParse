@@ -7,6 +7,7 @@ import urllib3
 import re
 import regex
 from PyEnhance import Loading, Timer, Counter, WebTools
+from concurrent.futures import ThreadPoolExecutor
 
 class Main:
 
@@ -155,6 +156,40 @@ class Main:
 
         self.Filter()
 
+    def MatchNamesAPICalls(self, Name):
+
+        for Regex in self.NameRegexList:
+
+            if Name in self.NamesList:
+                continue
+
+            SubStrings = Name.split(" ")
+
+            InDict = []
+            NotInDict = []
+
+            if re.fullmatch(Regex, Name):
+                for SubString in SubStrings:
+
+
+                    if requests.get(f"https://www.dictionary.com/browse/{SubString}").status_code == 200:
+                        InDict.append(SubString)
+                        continue
+
+                    if requests.get(
+                            f"https://www.dictionary.com/browse/{SubString}").status_code == 200 and SubString in self.NamesFromFile:
+                        NotInDict.append(SubString)
+                        continue
+
+                    if requests.get(f"https://www.dictionary.com/browse/{SubString}").status_code == 404:
+                        NotInDict.append(SubString)
+                        continue
+
+
+            if not len(NotInDict) == 0:
+                if Name not in self.NamesList:
+                        self.NamesList.append(Name)
+
     def Filter(self):
 
         self.EmailsList = []
@@ -240,19 +275,19 @@ class Main:
 
         # ||| START OF TEST CODE FOR PyEnhance REMOVE WHEN DONE!!! |||
 
-        NamesFromFile = []
-        CommonWordsFromFile = []
+        self.NamesFromFile = []
+        self.CommonWordsFromFile = []
 
         with open('Names.txt', 'r') as f:
 
             for Name in f:
-                NamesFromFile.append(Name.replace('\n', ''))
+                self.NamesFromFile.append(Name.replace('\n', ''))
 
 
         with open('CommonWords.txt', 'r') as f:
 
             for Word in f:
-                CommonWordsFromFile.append(Word.replace('\n', ''))
+                self.CommonWordsFromFile.append(Word.replace('\n', ''))
 
 
         # ||| END OF TEST CODE FOR PyEnhance REMOVE WHEN DONE!!! |||
@@ -266,38 +301,9 @@ class Main:
         StringsForNames = [unicodedata.normalize("NFKD", i) for i in self.Strings]
         StringsForNames = list(dict.fromkeys(StringsForNames))
 
-        for String in StringsForNames:
-            for Regex in self.NameRegexList:
 
-                if String in self.NamesList:
-                    continue
-
-                SubStrings = String.split(" ")
-
-                InDict = []
-                NotInDict = []
-
-                if re.fullmatch(Regex, String):
-                    for SubString in SubStrings:
-
-
-                        if requests.get(f"https://www.dictionary.com/browse/{SubString}").status_code == 200:
-                            InDict.append(SubString)
-                            continue
-
-                        if requests.get(
-                                f"https://www.dictionary.com/browse/{SubString}").status_code == 200 and SubString in NamesFromFile:
-                            NotInDict.append(SubString)
-                            continue
-
-                        if requests.get(f"https://www.dictionary.com/browse/{SubString}").status_code == 404:
-                            NotInDict.append(SubString)
-                            continue
-
-
-                if not len(NotInDict) == 0:
-                    if String not in self.NamesList:
-                        self.NamesList.append(String)
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            list(executor.map(self.MatchNamesAPICalls, StringsForNames)) # Calls function above Filter function
 
 
         self.NamesListFiltered = []
@@ -307,7 +313,7 @@ class Main:
             SubNames = str(Name).split(' ')
 
             for Sub in SubNames:
-                if Sub.lower() in CommonWordsFromFile and Sub not in NamesFromFile:
+                if Sub.lower() in self.CommonWordsFromFile and Sub not in self.NamesFromFile:
                     SubNames.remove(Sub)
 
             if len(SubNames) > 1:
@@ -352,9 +358,8 @@ def Start():
         Main(URL=URL)
 
 if __name__ == '__main__':
-    Start()
-
-#Main(URL="https://www.schwab.com/contact-us")
+    #Start()
+    Main(URL="https://it.tamu.edu/about/leadership/index.php")
 
 # https://www.wellsfargo.com/help/addresses/ | Works
 # https://www.apple.com/contact/ | Works

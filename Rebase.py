@@ -6,8 +6,10 @@ import os
 import urllib3
 import re
 import regex
-from PyEnhance import Loading, Timer, Counter, WebTools
+from PyEnhance import Loading, Timer, Counter, WebTools, Stamps
 from concurrent.futures import ThreadPoolExecutor
+from rich.console import Console
+from rich.table import Table
 
 class Main:
 
@@ -332,34 +334,110 @@ class Main:
         print(f"Addresses: {' | '.join([Address for Address in self.AddressesList])}")
         print(f"Names: {' | '.join([Name for Name in self.NamesListFiltered])}")
 
+
+        LongestList = max(self.EmailsList, self.PhoneNumbersList, self.AddressesList, self.NamesList)
+
+        for i in range(len(LongestList) - len(self.EmailsList)):
+            self.EmailsList += ["N/A"]
+
+        for i in range(len(LongestList) - len(self.PhoneNumbersList)):
+            self.PhoneNumbersList += ["N/A"]
+
+        for i in range(len(LongestList) - len(self.AddressesList)):
+            self.AddressesList += ["N/A"]
+
+        for i in range(len(LongestList) - len(self.NamesList)):
+            self.NamesList += ["N/A"]
+
+
+        table = Table(title="Output")
+
+        table.add_column("Emails", justify="right", style="cyan", no_wrap=True)
+        table.add_column("Phone Numbers", style="magenta")
+        table.add_column("Addresses", justify="right", style="green", no_wrap=True)
+        table.add_column("Names", justify="right", style="green")
+
+
+        for Email, PhoneNumber, Address, Name in zip(self.EmailsList, self.PhoneNumbersList, self.AddressesList,  self.NamesList):
+
+                    table.add_row(Email,PhoneNumber,Address,Name)
+
+
+        console = Console()
+        console.print(table)
     #|=|=| OUTPUT CODE END |=|=|#
 
-def Start():
-    WebTool = WebTools.WebTools()
 
-    URL = input("Please Enter URL: ")
+class UI:
+    def __init__(self):
+        self.Stamp = Stamps.Stamp
+        self.HasInternet = None
+        self.UserOS = None
 
-    if not URL.startswith('https://') or URL.startswith('http://'):
-        print('\n')
-        ReformatChoice = input(f"{URL} Does not have a valid schema will need to reformat. Reformat URL to HTTP[1] or HTTPS[2]: ")
+        self.InternetConnection()
+        self.Start()
 
-        if ReformatChoice == "1":
-            URL = WebTool.RefactorHTTP(URL)
-        elif ReformatChoice == "2":
-            URL = WebTool.RefactorHTTPS(URL)
+    def InternetConnection(self):
+        try:
+            requests.get('https://google.com')
+            self.HasInternet = True
+        except:
+            self.HasInternet = False
+    def Start(self):
+        WebTool = WebTools.WebTools()
+
+        URL = input(f"{self.Stamp.Input} Please Enter URL: ")
+
+
+        if not URL.startswith('https://') or URL.startswith('http://'):
+            print('\n')
+            print(f"{self.Stamp.Error} {URL} Does not have a valid schema will need to reformat.")
+            ReformatChoice = input(f"{self.Stamp.Input} Reformat URL to HTTP [1] or HTTPS [2]: ")
+
+            if ReformatChoice == "1":
+                URL = WebTool.RefactorHTTP(URL)
+            elif ReformatChoice == "2":
+                URL = WebTool.RefactorHTTPS(URL)
+            else:
+                print("Choice Not Valid")
+                exit()
+            print('\n')
+
+            if self.HasInternet == False:
+                print(f"{Stamps.Stamp.Warring} Will not parse names due to lack of internet connective need for API calls")
+                WantToContinue = input(f"{self.Stamp.Input} Do you want to continue y/n: ")
+
+                if WantToContinue.lower() == "y" or WantToContinue == 'yes':
+                    pass
+                elif WantToContinue.lower() == "n" or WantToContinue == 'no':
+                    exit()
+                else:
+                    print("Choice not valid")
+                    exit()
+
+            print('\n')
+            Main(URL=URL)
+
         else:
-            print("Choice Not Valid")
 
-        print('\n')
-        Main(URL=URL)
+            if self.HasInternet == False:
+                print(f"{Stamps.Stamp.Warring} Will not parse names due to lack of internet connective need for API calls")
+                WantToContinue = input(f"{self.Stamp.Input} Do you want to continue y/n: ")
 
-    else:
-        print('\n')
-        Main(URL=URL)
+                if WantToContinue.lower() == "y" or WantToContinue == 'yes':
+                    pass
+                elif WantToContinue.lower() == "n" or WantToContinue == 'no':
+                    exit()
+                else:
+                    print("Choice not valid")
+                    exit()
+
+            print('\n')
+            Main(URL=URL)
 
 if __name__ == '__main__':
-    #Start()
-    Main(URL="https://it.tamu.edu/about/leadership/index.php")
+    #UI()
+    Main(URL="https://www.wellsfargo.com/help/addresses/")
 
 # https://www.wellsfargo.com/help/addresses/ | Works
 # https://www.apple.com/contact/ | Works

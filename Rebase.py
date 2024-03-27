@@ -1,3 +1,5 @@
+import time
+
 import PyEnhance.Loading
 import requests
 import unicodedata
@@ -10,7 +12,7 @@ from PyEnhance import Loading, Timer, Counter, WebTools, Stamps
 from concurrent.futures import ThreadPoolExecutor
 from rich.console import Console
 from rich.table import Table
-
+import platform
 class Main:
 
     def __init__(self, URL):
@@ -131,16 +133,26 @@ class Main:
 
         self.Replace = [" ", "'", ",", "[", "]", "(", ")", "-", ".", "+"]
 
+
+        self.ClearScreenCommand = None
+
+        if platform.system() == "Windows":
+            self.UserOS = "Windows"
+            self.ClearScreenCommand = "cls"
+        elif platform.system() == "Linux":
+            self.UserOS = "Linux"
+            self.ClearScreenCommand = "clear"
+        elif platform.system() == "Darwin":
+            self.UserOS = "MacOS"
+            self.ClearScreenCommand = "clear"
+        else:
+            self.UserOS = "Unknown"
+            self.ClearScreenCommand = None
+
+        os.system(self.ClearScreenCommand)
+
+
         self.GetHtml()
-
-    def LoadingI(self):
-        Loading = PyEnhance.Loading.Loading()
-
-        self.LoadingEmails = Loading.Spin(Text="Getting Emails")
-        self.LoadingAddresses = Loading.Spin(Text="Getting Addresses")
-        self.LoadingPhoneNumbers = Loading.Spin("Getting Phone Numbers")
-        self.LoadingNames = Loading.Spin(Text="Getting Names")
-
 
     def GetHtml(self):
         Response = requests.get(f"{self.URL}", headers=self.WebHeaders, verify=False, )
@@ -217,8 +229,10 @@ class Main:
     #|=|=| PHONE NUMBER MATCH CODE START |=|=|#
 
         self.EmailLoading.Stop()
+        os.system(self.ClearScreenCommand)
         self.PhoneNumberLoading = PyEnhance.Loading.Loading()
         self.PhoneNumberLoading.Spin("Getting Phone Numbers")
+
         for String in self.Strings:
             for Regex in self.PhoneNumberRegexList:
                 if re.search(Regex, String):
@@ -232,6 +246,7 @@ class Main:
     #|=|=| ADDRESS MATCH CODE START |=|=|#
 
         self.PhoneNumberLoading.Stop()
+        os.system(self.ClearScreenCommand)
         self.AddressLoading = PyEnhance.Loading.Loading()
         self.AddressLoading.Spin("Getting Addresses")
         for String in self.Strings:
@@ -297,6 +312,7 @@ class Main:
     #|=|=| NAME MATCH CODE START |=|=|#
 
         self.AddressLoading.Stop()
+        os.system(self.ClearScreenCommand)
         self.NameLoading = PyEnhance.Loading.Loading()
         self.NameLoading.Spin("Getting Names")
 
@@ -338,24 +354,39 @@ class Main:
         LongestList = max(self.EmailsList, self.PhoneNumbersList, self.AddressesList, self.NamesList)
 
         for i in range(len(LongestList) - len(self.EmailsList)):
-            self.EmailsList += ["N/A"]
+            self.EmailsList += [" "]
 
         for i in range(len(LongestList) - len(self.PhoneNumbersList)):
-            self.PhoneNumbersList += ["N/A"]
+            self.PhoneNumbersList += [" "]
 
         for i in range(len(LongestList) - len(self.AddressesList)):
-            self.AddressesList += ["N/A"]
+            self.AddressesList += [" "]
 
         for i in range(len(LongestList) - len(self.NamesList)):
-            self.NamesList += ["N/A"]
+            self.NamesList += [" "]
 
 
-        table = Table(title="Output")
+        os.system(self.ClearScreenCommand)
 
-        table.add_column("Emails", justify="right", style="cyan", no_wrap=True)
-        table.add_column("Phone Numbers", style="magenta", no_wrap=True)
-        table.add_column("Addresses", justify="right", style="green", no_wrap=True)
-        table.add_column("Names", justify="right", style="orange1", no_wrap=True)
+        table = Table()
+
+        if str(self.URL).startswith('http://'):
+            TableHeader = str(self.URL).replace('http://','')
+        elif str(self.URL).startswith("https://"):
+            TableHeader = str(self.URL).replace('https://','')
+        else:
+            TableHeader = str(self.URL)
+
+        table.title = TableHeader
+
+        table.title_style = "bold"
+
+        table.border_style = "rgb(255,255,255)"
+        table.add_column("Emails", justify="right", style="rgb(255,255,255)", no_wrap=True)
+        table.add_column("Phone Numbers", style="rgb(255,255,255)", no_wrap=True)
+        table.add_column("Addresses", justify="right", style="rgb(255,255,255)", no_wrap=True)
+        table.add_column("Names", justify="right", style="rgb(255,255,255)", no_wrap=True)
+
 
 
         for Email, PhoneNumber, Address, Name in zip(self.EmailsList, self.PhoneNumbersList, self.AddressesList,  self.NamesList):
@@ -372,7 +403,22 @@ class UI:
     def __init__(self):
         self.Stamp = Stamps.Stamp
         self.HasInternet = None
-        self.UserOS = None
+        self.ClearScreenCommand = None
+        if platform.system() == "Windows":
+            self.UserOS = "Windows"
+            os.system('@echo off')
+            self.ClearScreenCommand = "cls"
+        elif platform.system() == "Linux":
+            self.UserOS = "Linux"
+            self.ClearScreenCommand = "clear"
+        elif platform.system() == "Darwin":
+            self.UserOS = "MacOS"
+            self.ClearScreenCommand = "clear"
+        else:
+            self.UserOS = "Unknown"
+            self.ClearScreenCommand = None
+
+        os.system(self.ClearScreenCommand)
 
         self.InternetConnection()
         self.Start()
@@ -390,7 +436,7 @@ class UI:
 
 
         if not URL.startswith('https://') or URL.startswith('http://'):
-            print('\n')
+            os.system(self.ClearScreenCommand)
             print(f"{self.Stamp.Error} {URL} Does not have a valid schema will need to reformat.")
             ReformatChoice = input(f"{self.Stamp.Input} Reformat URL to HTTP [1] or HTTPS [2]: ")
 
@@ -401,9 +447,9 @@ class UI:
             else:
                 print("Choice Not Valid")
                 exit()
-            print('\n')
 
             if self.HasInternet == False:
+                os.system(self.ClearScreenCommand)
                 print(f"{Stamps.Stamp.Warring} Will not parse names due to lack of internet connective need for API calls")
                 WantToContinue = input(f"{self.Stamp.Input} Do you want to continue y/n: ")
 
@@ -419,7 +465,6 @@ class UI:
             Main(URL=URL)
 
         else:
-
             if self.HasInternet == False:
                 print(f"{Stamps.Stamp.Warring} Will not parse names due to lack of internet connective need for API calls")
                 WantToContinue = input(f"{self.Stamp.Input} Do you want to continue y/n: ")
@@ -431,13 +476,14 @@ class UI:
                 else:
                     print("Choice not valid")
                     exit()
+            os.system(self.ClearScreenCommand)
 
             print('\n')
             Main(URL=URL)
 
 if __name__ == '__main__':
-    #UI()
-    Main(URL="https://www.wellsfargo.com/help/addresses/")
+    UI()
+    #Main(URL="https://www.wellsfargo.com/help/addresses/")
 
 # https://www.wellsfargo.com/help/addresses/ | Works
 # https://www.apple.com/contact/ | Works

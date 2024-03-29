@@ -290,7 +290,7 @@ class Main:
 
     #|=|=| ADDRESS MATCH CODE END |=|=|#
 
-        # ||| START OF TEST CODE FOR PyEnhance REMOVE WHEN DONE!!! |||
+        # ||| Start of code I will add to PyEnhance |||
 
         self.NamesFromFile = []
         self.CommonWordsFromFile = []
@@ -307,7 +307,7 @@ class Main:
                 self.CommonWordsFromFile.append(Word.replace('\n', ''))
 
 
-        # ||| END OF TEST CODE FOR PyEnhance REMOVE WHEN DONE!!! |||
+        # ||| End of code I will add to PyEnhance |||
 
     #|=|=| NAME MATCH CODE START |=|=|#
 
@@ -460,6 +460,7 @@ class UI:
                 else:
                     print("Choice not valid")
                     exit()
+
 
             print('\n')
             Main(URL=URL)

@@ -300,7 +300,6 @@ class Main:
             for Name in f:
                 self.NamesFromFile.append(Name.replace('\n', ''))
 
-
         with open('CommonWords.txt', 'r') as f:
 
             for Word in f:

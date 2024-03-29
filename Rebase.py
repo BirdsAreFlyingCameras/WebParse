@@ -1,5 +1,4 @@
 import time
-
 import PyEnhance.Loading
 import requests
 import unicodedata
@@ -296,12 +295,10 @@ class Main:
         self.CommonWordsFromFile = []
 
         with open('Names.txt', 'r') as f:
-
             for Name in f:
                 self.NamesFromFile.append(Name.replace('\n', ''))
 
         with open('CommonWords.txt', 'r') as f:
-
             for Word in f:
                 self.CommonWordsFromFile.append(Word.replace('\n', ''))
 

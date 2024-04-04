@@ -12,6 +12,7 @@ from concurrent.futures import ThreadPoolExecutor
 from rich.console import Console
 from rich.table import Table
 import platform
+
 class Main:
 
     def __init__(self, URL):
@@ -132,7 +133,6 @@ class Main:
 
         self.Replace = [" ", "'", ",", "[", "]", "(", ")", "-", ".", "+"]
 
-
         self.ClearScreenCommand = None
 
         if platform.system() == "Windows":
@@ -149,7 +149,6 @@ class Main:
             self.ClearScreenCommand = None
 
         os.system(self.ClearScreenCommand)
-
 
         self.GetHtml()
 
@@ -184,7 +183,6 @@ class Main:
             if re.fullmatch(Regex, Name):
                 for SubString in SubStrings:
 
-
                     if requests.get(f"https://www.dictionary.com/browse/{SubString}").status_code == 200:
                         InDict.append(SubString)
                         continue
@@ -197,7 +195,6 @@ class Main:
                     if requests.get(f"https://www.dictionary.com/browse/{SubString}").status_code == 404:
                         NotInDict.append(SubString)
                         continue
-
 
             if not len(NotInDict) == 0:
                 if Name not in self.NamesList:
@@ -212,6 +209,7 @@ class Main:
 
 
     #|=|=| EMAIL MATCH CODE START |=|=|#
+
         self.EmailLoading = PyEnhance.Loading.Loading()
 
         self.EmailLoading.Spin(Text="Getting Emails")
@@ -222,7 +220,6 @@ class Main:
                     self.EmailsList.append(String)
 
     #|=|=| EMAIL MATCH CODE END |=|=|#
-
 
 
     #|=|=| PHONE NUMBER MATCH CODE START |=|=|#
@@ -341,13 +338,11 @@ class Main:
 
     #|=|=| OUTPUT CODE START |=|=|#
 
-        #print(f"Emails: {' | '.join([Email for Email in self.EmailsList])}")
-        #print(f"Phone Numbers: {' | '.join([PhoneNumber for PhoneNumber in self.PhoneNumbersList])}")
-        #print(f"Addresses: {' | '.join([Address for Address in self.AddressesList])}")
-        #print(f"Names: {' | '.join([Name for Name in self.NamesListFiltered])}")
-
+        self.RealLenDict = {"EmailsList":len(self.EmailsList), "PhoneNumbersList":len(self.PhoneNumbersList),
+                            "AddressesList":len(self.AddressesList), "NamesList": len(self.NamesList)}
 
         LongestList = max(self.EmailsList, self.PhoneNumbersList, self.AddressesList, self.NamesList)
+
 
         for i in range(len(LongestList) - len(self.EmailsList)):
             self.EmailsList += [" "]
@@ -360,7 +355,6 @@ class Main:
 
         for i in range(len(LongestList) - len(self.NamesList)):
             self.NamesList += [" "]
-
 
         os.system(self.ClearScreenCommand)
 
@@ -383,16 +377,168 @@ class Main:
         table.add_column("Addresses", justify="right", style="rgb(255,255,255)", no_wrap=True)
         table.add_column("Names", justify="right", style="rgb(255,255,255)", no_wrap=True)
 
-
-
         for Email, PhoneNumber, Address, Name in zip(self.EmailsList, self.PhoneNumbersList, self.AddressesList,  self.NamesList):
-
                     table.add_row(Email,PhoneNumber,Address,Name)
-
 
         console = Console()
         console.print(table)
+
+        self.SaveResults()
+
     #|=|=| OUTPUT CODE END |=|=|#
+
+
+
+    #|=|=| Save Results CODE START |=|=|#
+
+    def SaveResults(self):
+
+        print('\n')
+
+        SaveResultsChoice = input(f"{Stamps.Stamp.Input} Save Results [y/n]: ")
+
+        if SaveResultsChoice == "y" or SaveResultsChoice == "Y" or SaveResultsChoice == "yes" or SaveResultsChoice == "Yes":
+
+            if str(self.URL).startswith('https://'):
+                SaveFileName = str(self.URL).replace('https://', '')
+                BannerNameForTXT = SaveFileName[:SaveFileName.index('/')]
+                SaveFileName = f"{SaveFileName[:SaveFileName.index('/')]}-WebParse-Results.txt"
+
+            elif str(self.URL).startswith('http://'):
+                SaveFileName = str(self.URL).replace('http://', '')
+                BannerNameForTXT = SaveFileName[:SaveFileName.index('/')]
+                SaveFileName = f"{SaveFileName[:SaveFileName.index('/')]}-WebParse-Results.txt"
+
+            else:
+                SaveFileName = str(self.URL)[:str(self.URL).index('/')]
+                SaveFileName = f"{SaveFileName}-WebParse-Results.txt"
+                BannerNameForTXT = str(self.URL)[:str(self.URL).index('/')]
+
+            if os.path.exists(SaveFileName):
+                print("\n")
+                PathAlreadyExistChoice = input(f'{Stamps.Stamp.Error} A file with the name {SaveFileName} already exists. Over Write File [1] | Change Save File Name [2] | Exit [3]: ')
+
+                if PathAlreadyExistChoice == "1":
+                    os.remove(SaveFileName)
+
+                elif PathAlreadyExistChoice == "2":
+                    print("\n")
+                    SaveFileName = input(f"{Stamps.Stamp.Input} New File Name: ")
+
+                    if not SaveFileName.endswith(".txt"):
+                        BannerNameForTXT = SaveFileName
+                        SaveFileName = f"{SaveFileName}.txt"
+                    BannerNameForTXT = SaveFileName.replace(".txt", "")
+
+                elif PathAlreadyExistChoice == "3":
+                    exit()
+
+                else:
+
+                    print('\n')
+                    print(f"{Stamps.Stamp.Error} Invalid Choice")
+                    print("\n")
+                    PathAlreadyExistChoice = input(f'{Stamps.Stamp.Error} A file with the name {SaveFileName} already exists. Over Write File [1] | Change Save File Name [2] | Exit [3]: ')
+
+                    if PathAlreadyExistChoice == "1":
+                        os.remove(SaveFileName)
+
+                    if PathAlreadyExistChoice == "2":
+                        print("\n")
+                        SaveFileName = input(f"{Stamps.Stamp.Input} New File Name: ")
+
+                        if not SaveFileName.endswith(".txt"):
+                            BannerNameForTXT = SaveFileName
+                            SaveFileName = f"{SaveFileName}.txt"
+                        BannerNameForTXT = SaveFileName.replace(".txt", "")
+
+                    if PathAlreadyExistChoice == "3":
+                        exit()
+
+
+            with open(SaveFileName, 'x', encoding='utf-8') as f:
+
+                f.write(f"┣━━━━━━━━━━ WebParse Results for {BannerNameForTXT} ━━━━━━━━━━┫")
+
+                f.write('\n')
+                f.write('\n')
+                f.write('\n')
+
+                f.write('━━━━━┫ Emails ┣━━━━━')
+
+                f.write('\n')
+                f.write('\n')
+
+                if not self.RealLenDict.get('EmailsList') == 0:
+                    for Email in self.EmailsList:
+                        f.write(Email)
+                        f.write('\n')
+
+                else:
+                    f.write("No Emails Found")
+
+
+                f.write('\n')
+                f.write('\n')
+
+                f.write('━━━━━┫ Phone Numbers ┣━━━━━')
+
+                f.write('\n')
+                f.write('\n')
+
+                if not self.RealLenDict.get('PhoneNumbersList') == 0:
+                    for PhoneNumber in self.PhoneNumbersList:
+                        f.write(PhoneNumber)
+                        f.write('\n')
+                else:
+                    f.write("No Phone Numbers Found")
+
+
+                f.write('\n')
+                f.write('\n')
+
+                f.write('━━━━━┫ Addresses ┣━━━━━')
+
+                f.write('\n')
+                f.write('\n')
+
+                if not self.RealLenDict.get('AddressesList') == 0:
+                    for Address in self.AddressesList:
+                        f.write(Address)
+                        f.write('\n')
+                else:
+                    f.write("No Addresses Found")
+
+
+                f.write('\n')
+                f.write('\n')
+
+                f.write('━━━━━┫ Names ┣━━━━━')
+
+                f.write('\n')
+                f.write('\n')
+
+                if not self.RealLenDict.get('NamesList') == 0:
+                    for Name in self.NamesList:
+                        f.write(Name)
+                        f.write('\n')
+                else:
+                    f.write("No Names Found")
+
+
+            print("\n")
+
+            if self.UserOS == "Linux" or self.UserOS == "MacOS" or self.UserOS == "Unknown":
+                print(f"{Stamps.Stamp.Output} Saved Results to {os.path.dirname(os.path.abspath(__file__))}/{SaveFileName}")
+            else:
+                print(f"{Stamps.Stamp.Output} Saved Results to {os.path.dirname(os.path.abspath(__file__))}\\{SaveFileName}")
+
+        else:
+            print("Exiting")
+            exit()
+
+    #|=|=| Save Results CODE END |=|=|#
+
 
 
 class UI:

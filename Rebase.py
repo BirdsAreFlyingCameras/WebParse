@@ -1,3 +1,4 @@
+import pprint
 import time
 import PyEnhance.Loading
 import requests
@@ -12,6 +13,8 @@ from concurrent.futures import ThreadPoolExecutor
 from rich.console import Console
 from rich.table import Table
 import platform
+import brotli
+
 
 class Main:
 
@@ -22,7 +25,7 @@ class Main:
 
         self.WebHeaders = {
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
-            'Accept': "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            'Accept': "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8,text/html;charset=utf-8",
             'Accept-Encoding': "gzip, deflate, br",
             'Accept-Language': "en-US,en;q=0.5",
         }
@@ -166,6 +169,19 @@ class Main:
                 if String not in self.Strings:
                     self.Strings.append(String)
 
+        #print(Response.status_code)
+        #print(Response.apparent_encoding)
+        #print(Response.is_redirect)
+        #print(Response.next)
+        #print(Response.headers)
+        #print(Response.raw)
+        #print(Response.content)
+#
+#
+        #with open(f"Debug-{str(self.URL)[str(self.URL).index('.'):str(self.URL).rindex('.')]}", 'wb') as f:
+        #        f.write(Response.content)
+        #
+        #
         self.Filter()
 
     def MatchNamesAPICalls(self, Name):
@@ -632,3 +648,5 @@ if __name__ == '__main__':
 # https://www.apple.com/contact/ | Works
 # https://www.schwab.com/contact-us | Works
 # https://it.tamu.edu/about/leadership/index.php | Works
+
+# https://admissions.umich.edu/explore-visit/contact-us | Sort of working not getting full address

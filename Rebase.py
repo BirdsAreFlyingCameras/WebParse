@@ -24,10 +24,21 @@ class Main:
         self.URL = URL
 
         self.WebHeaders = {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
-            'Accept': "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8,text/html;charset=utf-8",
-            'Accept-Encoding': "gzip, deflate, br",
-            'Accept-Language': "en-US,en;q=0.5",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1",
+            "Sec-Fetch-Site": "none",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-User": "?1",
+            "Sec-Fetch-Dest": "document",
+            "Sec-CH-UA": "\" Not A;Brand\";v=\"99\", \"Chromium\";v=\"99\", \"Google Chrome\";v=\"99\"",
+            "Sec-CH-UA-Mobile": "?0",
+            "Sec-CH-UA-Platform": "\"Windows\"",
+            "Cache-Control": "max-age=0",
+
         }
 
         self.Strings = []
@@ -156,7 +167,7 @@ class Main:
         self.GetHtml()
 
     def GetHtml(self):
-        Response = requests.get(f"{self.URL}", headers=self.WebHeaders, verify=False, )
+        Response = requests.get(f"{self.URL}", headers=self.WebHeaders, verify=False)
 
         self.HtmlContent = Response.text
 
@@ -169,22 +180,22 @@ class Main:
                 if String not in self.Strings:
                     self.Strings.append(String)
 
-        #print(Response.status_code)
-        #print(Response.apparent_encoding)
-        #print(Response.is_redirect)
-        #print(Response.next)
-        #print(Response.headers)
-        #print(Response.raw)
-        #print(Response.content)
-#
-#
-        #with open(f"Debug-{str(self.URL)[str(self.URL).index('.'):str(self.URL).rindex('.')]}", 'wb') as f:
-        #        f.write(Response.content)
-        #
-        #
+
+
+        #print(Response.status_code) # Debug
+        #print(Response.apparent_encoding) #Debug
+        #print(Response.is_redirect) # Debug
+        #print(Response.next) # Debug
+        #print(Response.headers) # Debug
+        #print(Response.raw) # Debug
+        #print(Response.content) # Debug
+
+        #with open(f"Debug-{str(self.URL)[str(self.URL).index('.'):str(self.URL).rindex('.')]}", 'wb') as f: # Debug
+        #        f.write(Response.content) # Debug
+
         self.Filter()
 
-    def MatchNamesAPICalls(self, Name):
+    def MatchNamesAPICalls(self, Name):  # For name matching | Called in the Filter function
 
         for Regex in self.NameRegexList:
 
@@ -199,22 +210,24 @@ class Main:
             if re.fullmatch(Regex, Name):
                 for SubString in SubStrings:
 
-                    if requests.get(f"https://www.dictionary.com/browse/{SubString}").status_code == 200:
-                        InDict.append(SubString)
+                    try:
+
+                        if SubString in self.NamesFromFile:
+                            NotInDict.append(SubString)
+                            continue
+                        if requests.get(f"https://www.dictionary.com/browse/{SubString}").status_code == 404:
+                            NotInDict.append(SubString)
+                            continue
+                        elif requests.get(f"https://www.dictionary.com/browse/{SubString}").status_code == 200:
+                            InDict.append(SubString)
+                            continue
+
+                    except requests.exceptions.RequestException:
+                        print(f"{Stamps.Stamp.Warring} API Request Error. Continuing...")
                         continue
 
-                    if requests.get(
-                            f"https://www.dictionary.com/browse/{SubString}").status_code == 200 and SubString in self.NamesFromFile:
-                        NotInDict.append(SubString)
-                        continue
-
-                    if requests.get(f"https://www.dictionary.com/browse/{SubString}").status_code == 404:
-                        NotInDict.append(SubString)
-                        continue
-
-            if not len(NotInDict) == 0:
-                if Name not in self.NamesList:
-                        self.NamesList.append(Name)
+                if len(NotInDict) != 0 and Name not in self.NamesList:
+                    self.NamesList.append(Name)
 
     def Filter(self):
 
@@ -285,10 +298,10 @@ class Main:
                         else:
                             continue
                 except TimeoutError as e:
+                    print(f"{Stamps.Stamp.Info} Regex Match Timed Out. Continuing to next address.")
                     print(e)
                     continue
-                except:
-                    continue
+
 
         for String in self.AddressesList:
 
@@ -360,16 +373,16 @@ class Main:
         LongestList = max(self.EmailsList, self.PhoneNumbersList, self.AddressesList, self.NamesList)
 
 
-        for i in range(len(LongestList) - len(self.EmailsList)):
+        for _ in range(len(LongestList) - len(self.EmailsList)):
             self.EmailsList += [" "]
 
-        for i in range(len(LongestList) - len(self.PhoneNumbersList)):
+        for _ in range(len(LongestList) - len(self.PhoneNumbersList)):
             self.PhoneNumbersList += [" "]
 
-        for i in range(len(LongestList) - len(self.AddressesList)):
+        for _ in range(len(LongestList) - len(self.AddressesList)):
             self.AddressesList += [" "]
 
-        for i in range(len(LongestList) - len(self.NamesList)):
+        for _ in range(len(LongestList) - len(self.NamesList)):
             self.NamesList += [" "]
 
         os.system(self.ClearScreenCommand)
@@ -442,7 +455,6 @@ class Main:
                     SaveFileName = input(f"{Stamps.Stamp.Input} New File Name: ")
 
                     if not SaveFileName.endswith(".txt"):
-                        BannerNameForTXT = SaveFileName
                         SaveFileName = f"{SaveFileName}.txt"
                     BannerNameForTXT = SaveFileName.replace(".txt", "")
 
@@ -464,7 +476,6 @@ class Main:
                         SaveFileName = input(f"{Stamps.Stamp.Input} New File Name: ")
 
                         if not SaveFileName.endswith(".txt"):
-                            BannerNameForTXT = SaveFileName
                             SaveFileName = f"{SaveFileName}.txt"
                         BannerNameForTXT = SaveFileName.replace(".txt", "")
 
@@ -485,7 +496,7 @@ class Main:
                 f.write('\n')
                 f.write('\n')
 
-                if not self.RealLenDict.get('EmailsList') == 0:
+                if self.RealLenDict.get('EmailsList') != 0:
                     for Email in self.EmailsList:
                         f.write(Email)
                         f.write('\n')
@@ -502,7 +513,7 @@ class Main:
                 f.write('\n')
                 f.write('\n')
 
-                if not self.RealLenDict.get('PhoneNumbersList') == 0:
+                if self.RealLenDict.get('PhoneNumbersList') != 0:
                     for PhoneNumber in self.PhoneNumbersList:
                         f.write(PhoneNumber)
                         f.write('\n')
@@ -518,7 +529,7 @@ class Main:
                 f.write('\n')
                 f.write('\n')
 
-                if not self.RealLenDict.get('AddressesList') == 0:
+                if self.RealLenDict.get('AddressesList') != 0:
                     for Address in self.AddressesList:
                         f.write(Address)
                         f.write('\n')
@@ -534,7 +545,7 @@ class Main:
                 f.write('\n')
                 f.write('\n')
 
-                if not self.RealLenDict.get('NamesList') == 0:
+                if self.RealLenDict.get('NamesList') != 0:
                     for Name in self.NamesList:
                         f.write(Name)
                         f.write('\n')
@@ -550,7 +561,8 @@ class Main:
                 print(f"{Stamps.Stamp.Output} Saved Results to {os.path.dirname(os.path.abspath(__file__))}\\{SaveFileName}")
 
         else:
-            print("Exiting")
+            print('\n')
+            print(f"{Stamps.Stamp.Info} Exiting")
             exit()
 
     #|=|=| Save Results CODE END |=|=|#
@@ -585,7 +597,7 @@ class UI:
         try:
             requests.get('https://google.com')
             self.HasInternet = True
-        except:
+        except requests.exceptions.ConnectionError:
             self.HasInternet = False
     def Start(self):
         WebTool = WebTools.WebTools()
@@ -606,14 +618,12 @@ class UI:
                 print("Choice Not Valid")
                 exit()
 
-            if self.HasInternet == False:
+            if self.HasInternet is False:
                 os.system(self.ClearScreenCommand)
                 print(f"{Stamps.Stamp.Warring} Will not parse names due to lack of internet connective need for API calls")
                 WantToContinue = input(f"{self.Stamp.Input} Do you want to continue y/n: ")
 
-                if WantToContinue.lower() == "y" or WantToContinue == 'yes':
-                    pass
-                elif WantToContinue.lower() == "n" or WantToContinue == 'no':
+                if WantToContinue.lower() == "n" or WantToContinue.lower() == 'no':
                     exit()
                 else:
                     print("Choice not valid")
@@ -624,29 +634,28 @@ class UI:
             Main(URL=URL)
 
         else:
-            if self.HasInternet == False:
+            if self.HasInternet is False:
                 print(f"{Stamps.Stamp.Warring} Will not parse names due to lack of internet connective need for API calls")
                 WantToContinue = input(f"{self.Stamp.Input} Do you want to continue y/n: ")
 
-                if WantToContinue.lower() == "y" or WantToContinue == 'yes':
-                    pass
-                elif WantToContinue.lower() == "n" or WantToContinue == 'no':
+                if WantToContinue.lower() == "n" or WantToContinue.lower() == 'no':
                     exit()
                 else:
                     print("Choice not valid")
                     exit()
+
             os.system(self.ClearScreenCommand)
 
             print('\n')
             Main(URL=URL)
 
 if __name__ == '__main__':
-    UI()
-    #Main(URL="https://www.wellsfargo.com/help/addresses/")
+    #UI()
+    Main(URL="https://about.google/contact-google/")
 
 # https://www.wellsfargo.com/help/addresses/ | Works
-# https://www.apple.com/contact/ | Works
+# https://www.apple.com/contact/ | Not getting all the phone numbers
 # https://www.schwab.com/contact-us | Works
 # https://it.tamu.edu/about/leadership/index.php | Works
 
-# https://admissions.umich.edu/explore-visit/contact-us | Sort of working not getting full address
+# https://admissions.umich.edu/explore-visit/contact-us | Sort of working not getting full address and names mathing to places

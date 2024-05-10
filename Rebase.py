@@ -86,6 +86,7 @@ class Main:
         self.AddressesRegex26 = r"^(\w{1,})\s(\w{1,})\s(\d{1,}\w{1,})\s(\w{1,})(,)\s([A-Z][a-z]{1,})\s([A-Z][a-z]{1,})(,)\s([A-Z]{1,})\s(\d{1,})(,)\s(\w{1,})"
         self.AddressesRegex27 = r"^(\w{1,})\s(\w{1,})\s(\w{0,})\s(\w{0,}),\s([A-Z]\w{1,}),\s([A-Z]{2})\s(\d{5,})$"
 
+
         self.PhoneNumberRegex1 = r"^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
         self.PhoneNumberRegex2 = r"^\+?1?-\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
         self.PhoneNumberRegex3 = r"\+?1?\s?\(?\d{3}\)?\s]?\d{3}\s]?\d{4}$"
@@ -145,7 +146,6 @@ class Main:
                                  self.AddressesRegex22, self.AddressesRegex23, self.AddressesRegex24,
                                  self.AddressesRegex25, self.AddressesRegex26, self.AddressesRegex27]
 
-        self.Replace = [" ", "'", ",", "[", "]", "(", ")", "-", ".", "+"]
 
         self.ClearScreenCommand = None
 
@@ -175,12 +175,6 @@ class Main:
 
         AllTags = self.Soup.descendants
 
-        for Tag in AllTags:
-            for String in Tag.stripped_strings:
-                if String not in self.Strings:
-                    self.Strings.append(String)
-
-
 
         #print(Response.status_code) # Debug
         #print(Response.apparent_encoding) #Debug
@@ -190,8 +184,11 @@ class Main:
         #print(Response.raw) # Debug
         #print(Response.content) # Debug
 
-        #with open(f"Debug-{str(self.URL)[str(self.URL).index('.'):str(self.URL).rindex('.')]}", 'wb') as f: # Debug
-        #        f.write(Response.content) # Debug
+
+        for Tag in AllTags:
+            for String in Tag.stripped_strings:
+                if String not in self.Strings:
+                    self.Strings.append(String)
 
         self.Filter()
 
@@ -263,7 +260,7 @@ class Main:
                 if re.search(Regex, String):
                     if String not in self.PhoneNumbersList:
                         self.PhoneNumbersList.append(String)
-
+        print(self.PhoneNumbersList)
     #|=|=| PHONE NUMBER MATCH CODE END |=|=|#
 
 
@@ -301,6 +298,9 @@ class Main:
                     print(f"{Stamps.Stamp.Info} Regex Match Timed Out. Continuing to next address.")
                     print(e)
                     continue
+                except IndexError:
+                    break
+
 
 
         for String in self.AddressesList:
@@ -330,6 +330,7 @@ class Main:
 
 
         # ||| End of code I will add to PyEnhance |||
+
 
     #|=|=| NAME MATCH CODE START |=|=|#
 
@@ -370,19 +371,18 @@ class Main:
         self.RealLenDict = {"EmailsList":len(self.EmailsList), "PhoneNumbersList":len(self.PhoneNumbersList),
                             "AddressesList":len(self.AddressesList), "NamesList": len(self.NamesList)}
 
-        LongestList = max(self.EmailsList, self.PhoneNumbersList, self.AddressesList, self.NamesList)
+        LongestList = max(len(self.EmailsList), len(self.PhoneNumbersList), len(self.AddressesList), len(self.NamesList))
 
-
-        for _ in range(len(LongestList) - len(self.EmailsList)):
+        for _ in range(LongestList - len(self.EmailsList)):
             self.EmailsList += [" "]
 
-        for _ in range(len(LongestList) - len(self.PhoneNumbersList)):
+        for _ in range(LongestList - len(self.PhoneNumbersList)):
             self.PhoneNumbersList += [" "]
 
-        for _ in range(len(LongestList) - len(self.AddressesList)):
+        for _ in range(LongestList - len(self.AddressesList)):
             self.AddressesList += [" "]
 
-        for _ in range(len(LongestList) - len(self.NamesList)):
+        for _ in range(LongestList - len(self.NamesList)):
             self.NamesList += [" "]
 
         os.system(self.ClearScreenCommand)
@@ -651,11 +651,19 @@ class UI:
 
 if __name__ == '__main__':
     #UI()
-    Main(URL="https://about.google/contact-google/")
+    Main(URL="https://www.apple.com/contact/")
 
+# https://www.aetna.com/about-us/contact-aetna.html | works
 # https://www.wellsfargo.com/help/addresses/ | Works
-# https://www.apple.com/contact/ | Not getting all the phone numbers
 # https://www.schwab.com/contact-us | Works
 # https://it.tamu.edu/about/leadership/index.php | Works
 
+
+# https://www.dyson.co.uk/support/contact-us | Bricks the program
+
+
+# https://tfglimited.co.za/contact/ | Emails being redacted by CDN
+
+# https://www.apple.com/contact/ | Not getting all the phone numbers
+# https://www.gmfinancial.com/en-us/contact.html | Names are not names and it added 9 a.m. - 1 p.m. CT to the address
 # https://admissions.umich.edu/explore-visit/contact-us | Sort of working not getting full address and names mathing to places

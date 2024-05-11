@@ -1,6 +1,6 @@
 # WebParse
 
-## Rewrite Beta 1.1
+## Rewrite Beta 1.2
 
 Rewrite Dev v1.0
 
@@ -11,12 +11,12 @@ Rewrite Dev v1.0
 - Added Debug to commented out lines of code
 
 
-Rebase Dev v1.1
+Rewrite Dev v1.1
 
 - Fixed issue with results not showing it was due to a error in calculating the longest list inside the output function I forgot to get max(len()) not just max() of all the lists
 
 
-Rebase Dev v1.2
+Rewrite Dev v1.2
 
 - Added a lot more names and words
 

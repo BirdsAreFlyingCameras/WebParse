@@ -194,6 +194,9 @@ class Main:
 
     def MatchNamesAPICalls(self, Name):  # For name matching | Called in the Filter function
 
+        InDict = []
+        NotInDict = []
+
         for Regex in self.NameRegexList:
 
             if Name in self.NamesList:
@@ -201,17 +204,19 @@ class Main:
 
             SubStrings = Name.split(" ")
 
-            InDict = []
-            NotInDict = []
-
             if re.fullmatch(Regex, Name):
                 for SubString in SubStrings:
 
                     try:
 
+                        if str(SubString).lower() in self.CommonWordsFromFile:
+                            InDict.append(SubString)
+                            continue
+
                         if SubString in self.NamesFromFile:
                             NotInDict.append(SubString)
                             continue
+
                         if requests.get(f"https://www.dictionary.com/browse/{SubString}").status_code == 404:
                             NotInDict.append(SubString)
                             continue
@@ -260,7 +265,6 @@ class Main:
                 if re.search(Regex, String):
                     if String not in self.PhoneNumbersList:
                         self.PhoneNumbersList.append(String)
-        print(self.PhoneNumbersList)
     #|=|=| PHONE NUMBER MATCH CODE END |=|=|#
 
 
@@ -320,11 +324,11 @@ class Main:
         self.NamesFromFile = []
         self.CommonWordsFromFile = []
 
-        with open('Names.txt', 'r') as f:
+        with open('Names.txt', 'r', encoding='utf-8') as f:
             for Name in f:
                 self.NamesFromFile.append(Name.replace('\n', ''))
 
-        with open('CommonWords.txt', 'r') as f:
+        with open('CommonWords.txt', 'r', encoding='utf-8') as f:
             for Word in f:
                 self.CommonWordsFromFile.append(Word.replace('\n', ''))
 
@@ -651,7 +655,7 @@ class UI:
 
 if __name__ == '__main__':
     #UI()
-    Main(URL="https://www.apple.com/contact/")
+    Main(URL="https://www.gmfinancial.com/en-us/contact.html")
 
 # https://www.aetna.com/about-us/contact-aetna.html | works
 # https://www.wellsfargo.com/help/addresses/ | Works

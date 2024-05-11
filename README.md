@@ -1,6 +1,6 @@
 # WebParse
 
-## Rewrite Beta 1.2
+## Rewrite Dev v1.2
 
 Rewrite Dev v1.0
 

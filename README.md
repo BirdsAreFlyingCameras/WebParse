@@ -1,6 +1,6 @@
 # WebParse
 
-## Rewrite Dev v1.2
+## Rewrite Dev v1.3
 
 Rewrite Dev v1.0
 
@@ -22,6 +22,18 @@ Rewrite Dev v1.2
 
 - Cut the time of parsing names from 20s down to 2s and decreased the number of API call by 90%. There is an issue of it missing names that are in the CommonWords.txt this needs to be fixed by removing common names from that file.
 
+
+Rewrite Dev v1.3
+
+- Added New Words Lists For Filtering:
+
+  - CountryNames.txt
+  - States-Provinces.txt
+  - CityNames.txt
+  - CommonWebsitePhrases.txt
+  - JobTitles.txt
+
+  
 ***BirdsAreFlyingCameras | CEO of Not A Bird Inc.***
 
   

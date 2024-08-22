@@ -62,7 +62,7 @@ class Main:
         self.AddressRegex2 = r"^(\d{1,5})\s(\w{1,20})\s?(\w{1,20}){0,}(,?)\s(\w{1,10})(\.?)(,?)\s(\w{1,10}){0,}(\.?)\s(\d{1,10})(,?)\s(\w{1,20})\s?(\w{1,20}){0,}(,?)\s(\w{2}?)(,?)\s(\d{1,9})$"
         self.AddressRegex3 = r"^(P.O.?|PO)\s(Box)\s(\d{1,8})(,?)\s(\w{1,10})(\s?)(\w{1,10}){0,}(,?)\s(\w{2})\s(\d{5,9}-\d{1,9}|\d{5,9})$"
         self.AddressRegex4 = r"^(\d{1,5})\s(\w{1,20})(\.?)(,?)\s(\w{1,20})\s?(\w{1,20}){0,}(,?)\s(\w{2}?)(,?)\s(\d{1,9})$"
-        self.AddressesRegex5 = r"^\d{1,5}\s\w{1,20}(?:[A-Za-z0-9. -]+[ ]?)+\w{2,}\.?(?:[,]\s\w{1,20}\s[A-Z]{2}\s\d{5})?$"
+        self.AddressesRegex5 = r"^\d{1,5}\s[A-Za-z]{1,20}(?:[A-Za-z0-9. -]+[ ]?)+[A-Za-z]{2,}\.?(?:[,]\s[A-Za-z]{1,20}\s[A-Z]{2}\s\d{5})?$"
         self.AddressesRegex6 = r"^\w{1,10}.\w{1,10}?.\w{1,10}?,.Suite.\d{1,10},.\w{1,20},.\w{2}.\d{1,5}"
         self.AddressesRegex7 = r"^\d{1,5}.\w{1,20}.\w{1,10}.\w{2}\n\w{1,20},.\w{2}.\d{1,5}"
         self.AddressesRegex8 = r"^\d{1,5}.\w{1,2}\W{1}.\w{1,20}.\w{1,20}.\w{1,20}.\w{1,20},.\w{2}.\d{1,5}"
@@ -85,7 +85,7 @@ class Main:
         self.AddressesRegex25 = r"^(\w{1,})\s([A-Z][a-z]{1,})\s(\w{1,})(,)\s([A-Z][a-z]{1,})\s([A-Z][a-z]{1,})(,)\s([A-Z]{2})\s(\d{1,})(,)\s(\w{1,})"
         self.AddressesRegex26 = r"^(\w{1,})\s(\w{1,})\s(\d{1,}\w{1,})\s(\w{1,})(,)\s([A-Z][a-z]{1,})\s([A-Z][a-z]{1,})(,)\s([A-Z]{1,})\s(\d{1,})(,)\s(\w{1,})"
         self.AddressesRegex27 = r"^(\w{1,})\s(\w{1,})\s(\w{0,})\s(\w{0,}),\s([A-Z]\w{1,}),\s([A-Z]{2})\s(\d{5,})$"
-
+        self.AddressesRegex28 = r"\d{1,7}-\w{1,} \w{1,} \w{1,} \w{1,} \d{1,9} \w{1,}, \w{2} \d{1,9}"
 
         self.PhoneNumberRegex1 = r"^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
         self.PhoneNumberRegex2 = r"^\+?1?-\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
@@ -144,7 +144,8 @@ class Main:
                                  self.AddressesRegex20,
                                  self.AddressesRegex21,
                                  self.AddressesRegex22, self.AddressesRegex23, self.AddressesRegex24,
-                                 self.AddressesRegex25, self.AddressesRegex26, self.AddressesRegex27]
+                                 self.AddressesRegex25, self.AddressesRegex26, self.AddressesRegex27,
+                                 self.AddressesRegex28]
 
 
         self.ClearScreenCommand = None
@@ -168,7 +169,6 @@ class Main:
 
     def GetHtml(self):
         Response = requests.get(f"{self.URL}", headers=self.WebHeaders, verify=False)
-
         self.HtmlContent = Response.text
 
         self.Soup = BeautifulSoup(self.HtmlContent, 'html.parser')
@@ -190,33 +190,49 @@ class Main:
                 if String not in self.Strings:
                     self.Strings.append(String)
 
+        self.Soup = BeautifulSoup(self.HtmlContent, 'html.parser')
+
+
+
         self.Filter()
 
-    def MatchNamesAPICalls(self, Name):  # For name matching | Called in the Filter function
+    def MatchNamesAPICalls(self, Name:str):  # For name matching | Called in the Filter function
 
         InDict = []
         NotInDict = []
 
+        if Name in self.CountryNamesFromFile: # Only checks for 2 word country names
+            return
+        if Name in self.WebsitePhrasesFromFile:
+            return
+        if Name in self.NamesList:
+            return
+        if Name in self.CityNamesFromFile:
+            return
+        if Name in self.StateAndProvincesFromFile:
+            return
+        if Name in self.JobTitlesFromFile:
+            return
+
+        SubStrings = Name.split(" ")
+
         for Regex in self.NameRegexList:
-
-            if Name in self.NamesList:
-                continue
-
-            SubStrings = Name.split(" ")
 
             if re.fullmatch(Regex, Name):
                 for SubString in SubStrings:
 
+                    if SubString in self.StateAndProvincesFromFile:
+                        continue
+
+                    if SubString in self.NamesFromFile or SubString.lower() in self.NamesFromFile:  # Moved above common words check due to names being included in the common words file
+                        NotInDict.append(SubString)
+                        continue
+
+                    if str(SubString).lower() in self.CommonWordsFromFile or str(SubString) in self.CommonWordsFromFile:
+                        InDict.append(SubString)
+                        continue
+
                     try:
-
-                        if str(SubString).lower() in self.CommonWordsFromFile:
-                            InDict.append(SubString)
-                            continue
-
-                        if SubString in self.NamesFromFile:
-                            NotInDict.append(SubString)
-                            continue
-
                         if requests.get(f"https://www.dictionary.com/browse/{SubString}").status_code == 404:
                             NotInDict.append(SubString)
                             continue
@@ -231,13 +247,13 @@ class Main:
                 if len(NotInDict) != 0 and Name not in self.NamesList:
                     self.NamesList.append(Name)
 
+
     def Filter(self):
 
         self.EmailsList = []
         self.PhoneNumbersList = []
         self.AddressesList = []
         self.NamesList = []
-
 
     #|=|=| EMAIL MATCH CODE START |=|=|#
 
@@ -275,7 +291,14 @@ class Main:
         os.system(self.ClearScreenCommand)
         self.AddressLoading = PyEnhance.Loading.Loading()
         self.AddressLoading.Spin("Getting Addresses")
+
         for String in self.Strings:
+
+            TimeRegex1 = r"^(\d{1,2}|\d{1,2}:\d{1,2})\s?(a.m.|p.m.|am|pm|A.M.|P.M.|AM|PM)?(\s|\s-\s)(\d{1,2}|\d{1,2}:\d{1,2})\s?(a.m.|p.m.|am|pm|A.M.|P.M.|AM|PM)\s?(CT|PST|EST|NST|AST|CST|MST|NDT|ADT|EDT|CDT|MDT|PDT|ct|pst|est|nst|ast|cst|mst|ndt|adt|edt|cdt|mdt|pdt)$"  # Matchs 9 a.m. - 1 p.m. CT and its varitaions
+
+            if regex.match(TimeRegex1, String):
+                continue
+
             for Regex in self.AddressRegexList:
 
                 if String in self.AddressesList:
@@ -285,10 +308,11 @@ class Main:
                         if String not in self.AddressesList:
                             self.AddressesList.append(String)
 
+
         for Index, String in enumerate(self.Strings):
             for Regex in self.AddressRegexList:
                 try:
-                    NewString = f"{String}, {self.Strings[Index+1]}"
+                    NewString = f"{String}, {self.Strings[Index+1]}" # Checks for double line addresses
 
                     if NewString in self.AddressesList:
                         continue
@@ -310,7 +334,7 @@ class Main:
         for String in self.AddressesList:
 
             try:
-                if String.split(',')[0] in self.AddressesList:
+                if String.split(',')[0] in self.AddressesList: # Checks if an incomplete version of a double line address is the list
                     self.AddressesList.remove(String.split(',')[0])
                 else:
                     continue
@@ -323,6 +347,12 @@ class Main:
 
         self.NamesFromFile = []
         self.CommonWordsFromFile = []
+        self.CityNamesFromFile = []
+        self.WebsitePhrasesFromFile = []
+        self.CountryNamesFromFile = []
+        self.StateAndProvincesFromFile = []
+        self.JobTitlesFromFile = []
+
 
         with open('Names.txt', 'r', encoding='utf-8') as f:
             for Name in f:
@@ -331,6 +361,26 @@ class Main:
         with open('CommonWords.txt', 'r', encoding='utf-8') as f:
             for Word in f:
                 self.CommonWordsFromFile.append(Word.replace('\n', ''))
+
+        with open('CityNames.txt', 'r', encoding='utf-8') as f:
+            for City in f:
+                self.CityNamesFromFile.append(City.replace('\n', ''))
+
+        with open("CommonWebsitePhrases.txt", "r", encoding="utf-8") as f:
+            for Phrase in f:
+                self.WebsitePhrasesFromFile.append(Phrase.replace('\n', ''))
+
+        with open("CountryNames.txt", "r", encoding="utf-8") as f:
+            for CountryName in f:
+                self.CountryNamesFromFile.append(CountryName.replace('\n', ''))
+
+        with open('States-Provinces.txt', 'r', encoding='utf-8') as f:
+            for StateAndProvince in f:
+                self.StateAndProvincesFromFile.append(StateAndProvince.replace('\n', ''))
+
+        with open('JobTitles.txt', 'r', encoding='utf-8') as f:
+            for JobTitle in f:
+                self.JobTitlesFromFile.append(JobTitle.replace('\n', ''))
 
 
         # ||| End of code I will add to PyEnhance |||
@@ -661,13 +711,30 @@ if __name__ == '__main__':
 # https://www.wellsfargo.com/help/addresses/ | Works
 # https://www.schwab.com/contact-us | Works
 # https://it.tamu.edu/about/leadership/index.php | Works
+# https://legion.co/company/about-us/ | Works
+# https://millions.co/about-us | Works
+# https://www.names.co.uk/info/contact-us | Works
 
+
+
+
+
+# https://brandt.co/about-us?alttemplate=aboutcontactus | Some names are not names and some phone numbers are in addresses
+
+# https://sfsalt.com/pages/about-us | Missing Phone, Address, Email
 
 # https://www.dyson.co.uk/support/contact-us | Bricks the program
 
+# https://tfglimited.co.za/contact/ | Emails being redacted by CDN and names are not names address is not an address
 
-# https://tfglimited.co.za/contact/ | Emails being redacted by CDN
+# https://www.appnation.co/about-us | Not getting all names due to then not being US names
 
+
+# https://www.gmfinancial.com/en-us/contact.html | Not getting the phone numbers
+
+# https://coastit.co.za/about-us/ | Missing Address
+
+# https://tech.co/contact | Not getting addresses and names are not names
+# https://www.bamco.com/contact-us/ | not getting addresses or emails and not getting all phone numbers
 # https://www.apple.com/contact/ | Not getting all the phone numbers
-# https://www.gmfinancial.com/en-us/contact.html | Names are not names and it added 9 a.m. - 1 p.m. CT to the address
-# https://admissions.umich.edu/explore-visit/contact-us | Sort of working not getting full address and names mathing to places
+# https://admissions.umich.edu/explore-visit/contact-us | Sort of working not getting full address

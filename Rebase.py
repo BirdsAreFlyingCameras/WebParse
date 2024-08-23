@@ -729,7 +729,7 @@ class UI:
 
 if __name__ == '__main__':
     #UI()
-    Main(URL="https://tech.co/contact")
+    Main(URL="https://www.spglobal.com/en/enterprise/about/contact-us.html")
 
 
 
@@ -770,6 +770,7 @@ if __name__ == '__main__':
 
 # ---| Issues With Phone Numbers |---
 
+# https://www.spglobal.c0/en/enterprise/about/contact-us.html | NOT GETTING ANY OF THE FUCKING 1M PHONE NUMBERS ON THE FUCKING PAGE
 # https://sfsalt.com/pages/about-us | Phone Number getting matched but with a bunch of extra text
 # https://www.apple.com/contact/ | Not getting all the phone numbers
 

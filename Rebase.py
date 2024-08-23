@@ -1,3 +1,4 @@
+import html
 import pprint
 import time
 import PyEnhance.Loading
@@ -87,14 +88,14 @@ class Main:
         self.AddressesRegex27 = r"^(\w{1,})\s(\w{1,})\s(\w{0,})\s(\w{0,}),\s([A-Z]\w{1,}),\s([A-Z]{2})\s(\d{5,})$"
         self.AddressesRegex28 = r"\d{1,7}-\w{1,} \w{1,} \w{1,} \w{1,} \d{1,9} \w{1,}, \w{2} \d{1,9}"
 
-        self.PhoneNumberRegex1 = r"^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
-        self.PhoneNumberRegex2 = r"^\+?1?-\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
+        self.PhoneNumberRegex1 = r"\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}"
+        self.PhoneNumberRegex2 = r"\+?1?-\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}"
         self.PhoneNumberRegex3 = r"\+?1?\s?\(?\d{3}\)?\s]?\d{3}\s]?\d{4}$"
-        self.PhoneNumberRegex4 = r"^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}.$"
-        self.PhoneNumberRegex5 = r"^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
-        self.PhoneNumberRegex6 = r"^([+]?\d?)([(]?)([+]?\d?)([–]?)( ?)(\d{3})([–]?)( ?)(\d{3})([–]?)( ?)(\d{4})([)]?)$"
-        self.PhoneNumberRegex7 = r"^([(]?)(\d{3})([)]?)\s(\d{3})(–|-?)(\d{4})$"
-        self.PhoneNumberRegex8 = r"^\d{10}"
+        self.PhoneNumberRegex4 = r"\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}."
+        self.PhoneNumberRegex5 = r"\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}"
+        self.PhoneNumberRegex6 = r"([+]?\d?)([(]?)([+]?\d?)([–]?)( ?)(\d{3})([–]?)( ?)(\d{3})([–]?)( ?)(\d{4})([)]?)"
+        self.PhoneNumberRegex7 = r"([(]?)(\d{3})([)]?)\s(\d{3})(–|-?)(\d{4})"
+        self.PhoneNumberRegex8 = r"\d{10}"
 
         self.StreetEndingsLong = [
             "Avenue", "Boulevard", "Drive", "Lane",
@@ -192,24 +193,26 @@ class Main:
 
         self.Soup = BeautifulSoup(self.HtmlContent, 'html.parser')
 
-
-
         self.Filter()
+
 
     def MatchNamesAPICalls(self, Name:str):  # For name matching | Called in the Filter function
 
         InDict = []
         NotInDict = []
 
+        Name = html.unescape(Name)  # Unescape HTML entities like &nbsp; to their corresponding characters
+
+        if Name in self.NamesList: # If name has already been matched
+            return
+
         if Name in self.CountryNamesFromFile: # Only checks for 2 word country names
             return
-        if Name in self.WebsitePhrasesFromFile:
-            return
-        if Name in self.NamesList:
+        if Name in self.StateAndProvincesFromFile:
             return
         if Name in self.CityNamesFromFile:
             return
-        if Name in self.StateAndProvincesFromFile:
+        if Name in self.WebsitePhrasesFromFile:
             return
         if Name in self.JobTitlesFromFile:
             return
@@ -255,18 +258,32 @@ class Main:
         self.AddressesList = []
         self.NamesList = []
 
-    #|=|=| EMAIL MATCH CODE START |=|=|#
+
+
+        SplitList = ["|"]
+        for String in self.Strings: # Needed to add code below to permutate stings like 1.800.480.4540 | customerservice@sfsalt.com in to 1.800.480.4540 and customerservice@sfsalt.com
+            for SplitChar in SplitList:
+                if SplitChar in String:
+                    for SubString in String.split(SplitChar):
+                        self.Strings.append(SubString.strip())
+
+
+
+        #|=|=| EMAIL MATCH CODE START |=|=|#
 
         self.EmailLoading = PyEnhance.Loading.Loading()
 
         self.EmailLoading.Spin(Text="Getting Emails")
 
         for String in self.Strings:
+            String = html.unescape(String).replace('\xa0', ' ')     # Unescape HTML entities like &nbsp; to their corresponding characters     # Replace non-breaking space (which is \xa0 after unescaping) with a regular space
+
             if re.search(self.EmailRegex, String):
                 if String not in self.EmailsList:
                     self.EmailsList.append(String)
 
     #|=|=| EMAIL MATCH CODE END |=|=|#
+
 
 
     #|=|=| PHONE NUMBER MATCH CODE START |=|=|#
@@ -277,10 +294,17 @@ class Main:
         self.PhoneNumberLoading.Spin("Getting Phone Numbers")
 
         for String in self.Strings:
+            String = html.unescape(String).replace('\xa0', ' ')     # Unescape HTML entities like &nbsp; to their corresponding characters
             for Regex in self.PhoneNumberRegexList:
-                if re.search(Regex, String):
+
+
+                Match = re.search(Regex, String)
+
+                if Match:
+                    String = Match.group()
                     if String not in self.PhoneNumbersList:
-                        self.PhoneNumbersList.append(String)
+                        self.PhoneNumbersList.append(String.strip())
+
     #|=|=| PHONE NUMBER MATCH CODE END |=|=|#
 
 
@@ -293,6 +317,7 @@ class Main:
         self.AddressLoading.Spin("Getting Addresses")
 
         for String in self.Strings:
+            String = html.unescape(String).replace('\xa0', ' ')     # Unescape HTML entities like &nbsp; to their corresponding characters
 
             TimeRegex1 = r"^(\d{1,2}|\d{1,2}:\d{1,2})\s?(a.m.|p.m.|am|pm|A.M.|P.M.|AM|PM)?(\s|\s-\s)(\d{1,2}|\d{1,2}:\d{1,2})\s?(a.m.|p.m.|am|pm|A.M.|P.M.|AM|PM)\s?(CT|PST|EST|NST|AST|CST|MST|NDT|ADT|EDT|CDT|MDT|PDT|ct|pst|est|nst|ast|cst|mst|ndt|adt|edt|cdt|mdt|pdt)$"  # Matchs 9 a.m. - 1 p.m. CT and its varitaions
 
@@ -395,7 +420,6 @@ class Main:
 
         StringsForNames = [unicodedata.normalize("NFKD", i) for i in self.Strings]
         StringsForNames = list(dict.fromkeys(StringsForNames))
-
 
         with ThreadPoolExecutor(max_workers=10) as executor:
             list(executor.map(self.MatchNamesAPICalls, StringsForNames)) # Calls function above Filter function
@@ -705,7 +729,17 @@ class UI:
 
 if __name__ == '__main__':
     #UI()
-    Main(URL="https://www.gmfinancial.com/en-us/contact.html")
+    Main(URL="https://tech.co/contact")
+
+
+
+
+
+# =========| Test Cases |==========
+
+
+
+# -----| Working Test Cases |-----
 
 # https://www.aetna.com/about-us/contact-aetna.html | works
 # https://www.wellsfargo.com/help/addresses/ | Works
@@ -717,24 +751,50 @@ if __name__ == '__main__':
 
 
 
+# ------| Non Working Test Cases |------
 
+# ---| Issues With Names |---
 
-# https://brandt.co/about-us?alttemplate=aboutcontactus | Some names are not names and some phone numbers are in addresses
-
-# https://sfsalt.com/pages/about-us | Missing Phone, Address, Email
-
-# https://www.dyson.co.uk/support/contact-us | Bricks the program
-
-# https://tfglimited.co.za/contact/ | Emails being redacted by CDN and names are not names address is not an address
-
+# https://brandt.co/about-us?alttemplate=aboutcontactus | Some name are place names but could be names
 # https://www.appnation.co/about-us | Not getting all names due to then not being US names
 
 
-# https://www.gmfinancial.com/en-us/contact.html | Not getting the phone numbers
 
+# ---| Issues With Addresses |---
+
+# https://www.gmfinancial.com/en-us/contact.html | Not getting all the addresses
+# https://admissions.umich.edu/explore-visit/contact-us | Sort of working not getting full address
 # https://coastit.co.za/about-us/ | Missing Address
 
-# https://tech.co/contact | Not getting addresses and names are not names
-# https://www.bamco.com/contact-us/ | not getting addresses or emails and not getting all phone numbers
+
+
+# ---| Issues With Phone Numbers |---
+
+# https://sfsalt.com/pages/about-us | Phone Number getting matched but with a bunch of extra text
 # https://www.apple.com/contact/ | Not getting all the phone numbers
-# https://admissions.umich.edu/explore-visit/contact-us | Sort of working not getting full address
+
+
+
+# ---| Multible Issue Causes |---
+
+# https://tech.co/contact | Not getting addresses and names are products and phone number is not a phone number
+# https://www.bamco.com/contact-us/ | not getting addresses or emails and not getting all phone numbers
+
+
+
+# ---| Other Issue Causes |---
+
+# https://tfglimited.co.za/contact/ | Emails being redacted by CDN and names are not names address is not an address
+
+
+
+# ---| Issue Cause Unknown |---
+
+# https://www.dyson.co.uk/support/contact-us | Bricks the program
+
+
+
+
+
+
+

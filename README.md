@@ -33,7 +33,13 @@ Rewrite Dev v1.3
   - CommonWebsitePhrases.txt
   - JobTitles.txt
 
-  
+
+Rewrite Dev v1.3.2
+
+- Made it so if a common website phrase is in a name it returns and moves on
+- Added more website phrases
+
+
 ***BirdsAreFlyingCameras | CEO of Not A Bird Inc.***
 
   

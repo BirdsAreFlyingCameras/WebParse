@@ -1,46 +1,49 @@
 # WebParse
 
-## Rewrite Dev v1.3
+## About
 
-Rewrite Dev v1.0
+**Version Number: Beta 1.0**
 
-- Added some error handling to some of the try except blocks
-
-- Optimised the name match API calls
-
-- Added Debug to commented out lines of code
-
-
-Rewrite Dev v1.1
-
-- Fixed issue with results not showing it was due to a error in calculating the longest list inside the output function I forgot to get max(len()) not just max() of all the lists
-
-
-Rewrite Dev v1.2
-
-- Added a lot more names and words
-
-- Cut the time of parsing names from 20s down to 2s and decreased the number of API call by 90%. There is an issue of it missing names that are in the CommonWords.txt this needs to be fixed by removing common names from that file.
+WebParse is a command-line tool that retrieves names, addresses, phone numbers, and emails from a given URL and outputs
+them in a human-friendly format to the command line, with an option to save the results in a text file.
+WebParse extensively uses regex to retrieve the desired information from raw HTML. Due to the use of regex,
+WebParse is imperfect and mainly relies on text being matched by a regex pattern (this does not apply to names).
+It is much more difficult to retrieve names because regex is not effective for name retrieval. To retrieve names,
+WebParse makes use of word lists containing over 800,000 words across all of them, sorted into categories to determine
+if a string is a name. A drawback of this approach is that the error rate is determined by the quality of the word lists
+and the methods used to filter a string against the word list content, which can lead to false positives.
+This is particularly challenging if the word lists don't have the necessary content to provide an effective filter.
 
 
-Rewrite Dev v1.3
 
-- Added New Words Lists For Filtering:
+## Installation
 
-  - CountryNames.txt
-  - States-Provinces.txt
-  - CityNames.txt
-  - CommonWebsitePhrases.txt
-  - JobTitles.txt
+**In the terminal of your choice:**
+
+**Install files from GitHub:**
+
+    git clone https://github.com/BirdsAreFlyingCameras/WebParse
+
+**Travel to the path of installation:**
+
+    cd [Path to script]
+
+**Then install the requirements:**
+
+    pip install -r requirements.txt
 
 
-Rewrite Dev v1.3.2
+## Usage
 
-- Made it so if a common website phrase is in a name it returns and moves on
-- Added more website phrases
+**In the terminal of your choice:**
 
 
-***BirdsAreFlyingCameras | CEO of Not A Bird Inc.***
+**Travel to the path of installation:**
 
-  
-  
+    cd [Path to script]
+
+**Then to run the script:**
+
+    python3 main.py
+
+![WebParseDemo.gif](images%2FWebParseDemo.gif)

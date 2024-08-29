@@ -37,7 +37,6 @@ This is particularly challenging if the word lists don't have the necessary cont
 
 **In the terminal of your choice:**
 
-
 **Travel to the path of installation:**
 
     cd [Path to script]

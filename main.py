@@ -14,6 +14,7 @@ from concurrent.futures import ThreadPoolExecutor
 from rich.console import Console
 from rich.table import Table
 import platform
+from colorama import init, Fore, Style
 import brotli
 
 
@@ -39,7 +40,6 @@ class Main:
             "Sec-CH-UA-Mobile": "?0",
             "Sec-CH-UA-Platform": "\"Windows\"",
             "Cache-Control": "max-age=0",
-
         }
 
         self.Strings = []
@@ -80,10 +80,10 @@ class Main:
             978, 979, 980, 984, 985, 986, 989,
         ]
 
-        self.AddressRegex1 = r"^(\d{1,5})\s(\w{1,20})\s?(\w{1,20}){0,}\s(\w{1,10})(\.?)(,?)\s(\w{1,20})\s?(\w{1,20}){0,}(,?)\s(\w{2}?)(,?)\s(\d{1,9})$"
-        self.AddressRegex2 = r"^(\d{1,5})\s(\w{1,20})\s?(\w{1,20}){0,}(,?)\s(\w{1,10})(\.?)(,?)\s(\w{1,10}){0,}(\.?)\s(\d{1,10})(,?)\s(\w{1,20})\s?(\w{1,20}){0,}(,?)\s(\w{2}?)(,?)\s(\d{1,9})$"
-        self.AddressRegex3 = r"^(P.O.?|PO)\s(Box)\s(\d{1,8})(,?)\s(\w{1,10})(\s?)(\w{1,10}){0,}(,?)\s(\w{2})\s(\d{5,9}-\d{1,9}|\d{5,9})$"
-        self.AddressRegex4 = r"^(\d{1,5})\s(\w{1,20})(\.?)(,?)\s(\w{1,20})\s?(\w{1,20}){0,}(,?)\s(\w{2}?)(,?)\s(\d{1,9})$"
+        self.AddressRegex1 =   r"^(\d{1,5})\s(\w{1,20})\s?(\w{1,20}){0,}\s(\w{1,10})(\.?)(,?)\s(\w{1,20})\s?(\w{1,20}){0,}(,?)\s(\w{2}?)(,?)\s(\d{1,9})$"
+        self.AddressRegex2 =   r"^(\d{1,5})\s(\w{1,20})\s?(\w{1,20}){0,}(,?)\s(\w{1,10})(\.?)(,?)\s(\w{1,10}){0,}(\.?)\s(\d{1,10})(,?)\s(\w{1,20})\s?(\w{1,20}){0,}(,?)\s(\w{2}?)(,?)\s(\d{1,9})$"
+        self.AddressRegex3 =   r"^(P.O.?|PO)\s(Box)\s(\d{1,8})(,?)\s(\w{1,10})(\s?)(\w{1,10}){0,}(,?)\s(\w{2})\s(\d{5,9}-\d{1,9}|\d{5,9})$"
+        self.AddressRegex4 =   r"^(\d{1,5})\s(\w{1,20})(\.?)(,?)\s(\w{1,20})\s?(\w{1,20}){0,}(,?)\s(\w{2}?)(,?)\s(\d{1,9})$"
         self.AddressesRegex5 = r"^\d{1,5}\s[A-Za-z]{1,20}(?:[A-Za-z0-9. -]+[ ]?)+[A-Za-z]{2,}\.?(?:[,]\s[A-Za-z]{1,20}\s[A-Z]{2}\s\d{5})?$"
         self.AddressesRegex6 = r"^\w{1,10}.\w{1,10}?.\w{1,10}?,.Suite.\d{1,10},.\w{1,20},.\w{2}.\d{1,5}"
         self.AddressesRegex7 = r"^\d{1,5}.\w{1,20}.\w{1,10}.\w{2}\n\w{1,20},.\w{2}.\d{1,5}"
@@ -109,14 +109,13 @@ class Main:
         self.AddressesRegex27 = r"^(\w{1,})\s(\w{1,})\s(\w{0,})\s(\w{0,}),\s([A-Z]\w{1,}),\s([A-Z]{2})\s(\d{5,})$"
         self.AddressesRegex28 = r"\d{1,7}-\w{1,} \w{1,} \w{1,} \w{1,} \d{1,9} \w{1,}, \w{2} \d{1,9}"
 
-        self.PhoneNumberRegex1 = r"\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}"
-        self.PhoneNumberRegex2 = r"\+?1?-\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}"
-        self.PhoneNumberRegex3 = r"\+?1?\s?\(?\d{3}\)?\s]?\d{3}\s]?\d{4}$"
-        self.PhoneNumberRegex4 = r"\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}."
-        self.PhoneNumberRegex5 = r"\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}"
-        self.PhoneNumberRegex6 = r"([+]?\d?)([(]?)([+]?\d?)([–]?)( ?)(\d{3})([–]?)( ?)(\d{3})([–]?)( ?)(\d{4})([)]?)"
-        self.PhoneNumberRegex7 = r"([(]?)(\d{3})([)]?)\s(\d{3})(–|-?)(\d{4})"
-        self.PhoneNumberRegex8 = r"\d{10}"
+        self.PhoneNumberRegex1 = r"\+?1? ?\(?\d{3}\)?(_|-|\.| )\d{3}(_|-|\.| |)?\d{4}"
+        self.PhoneNumberRegex2 = r"\+?1?- ?\(?\d{3}\)?[-. ]?\d{3}[-. ]?\d{4}"
+        self.PhoneNumberRegex3 = r"\+?1? ?\(?\d{3}\)? ]?\d{3} ]?\d{4}$"
+        self.PhoneNumberRegex5 = r"\+?1? ?\(?\d{3}\)?(_|-|\.| )\d{3}(_|-|\.| |)\d{4}"
+        self.PhoneNumberRegex6 = r"([+]?\d?)([(]?)([+]?\d?)([–]?)( ?)(\d{3})(_|-|\.| )( ?)(\d{3})(_|-|\.| |)( ?)(\d{4})([)]?)"
+        self.PhoneNumberRegex7 = r"([(]?)(\d{3})([)]?) (\d{3})(–|-?)(\d{4})"
+        self.PhoneNumberRegex8 = r"\+1( |)\d{10}"
 
         self.StreetEndingsLong = [
             "Avenue", "Boulevard", "Drive", "Lane",
@@ -147,7 +146,7 @@ class Main:
         ]
 
         self.PhoneNumberRegexList = [self.PhoneNumberRegex1, self.PhoneNumberRegex2, self.PhoneNumberRegex3,
-                                     self.PhoneNumberRegex4, self.PhoneNumberRegex5, self.PhoneNumberRegex6,
+                                     self.PhoneNumberRegex5, self.PhoneNumberRegex6,
                                      self.PhoneNumberRegex7, self.PhoneNumberRegex8]
 
         self.NameRegexList = [self.NameRegex1, self.NameRegex2, self.NameRegex3,
@@ -602,6 +601,8 @@ class Main:
 
                 if self.RealLenDict.get('EmailsList') != 0:
                     for Email in self.EmailsList:
+                        if Email == "" or Email == "\n" or Email  == " ":
+                            continue
                         f.write(Email)
                         f.write('\n')
 
@@ -619,6 +620,8 @@ class Main:
 
                 if self.RealLenDict.get('PhoneNumbersList') != 0:
                     for PhoneNumber in self.PhoneNumbersList:
+                        if PhoneNumber == "" or PhoneNumber == "\n" or PhoneNumber == " ":
+                            continue
                         f.write(PhoneNumber)
                         f.write('\n')
                 else:
@@ -635,11 +638,12 @@ class Main:
 
                 if self.RealLenDict.get('AddressesList') != 0:
                     for Address in self.AddressesList:
+                        if Address == "" or Address == "\n" or Address == " ":
+                            continue
                         f.write(Address)
                         f.write('\n')
                 else:
                     f.write("No Addresses Found")
-
 
                 f.write('\n')
                 f.write('\n')
@@ -651,6 +655,8 @@ class Main:
 
                 if self.RealLenDict.get('NamesList') != 0:
                     for Name in self.NamesList:
+                        if Name == "" or Name == "\n" or Name == " ":
+                            continue
                         f.write(Name)
                         f.write('\n')
                 else:
@@ -706,6 +712,33 @@ class UI:
     def Start(self):
         WebTool = WebTools.WebTools()
 
+
+        Banner = """
+ █████   ███   █████          █████               
+░░███   ░███  ░░███          ░░███                
+ ░███   ░███   ░███   ██████  ░███████            
+ ░███   ░███   ░███  ███░░███ ░███░░███           
+ ░░███  █████  ███  ░███████  ░███ ░███           
+  ░░░█████░█████░   ░███░░░   ░███ ░███           
+    ░░███ ░░███     ░░██████  ████████            
+     ░░░   ░░░       ░░░░░░  ░░░░░░░░             
+                                                  
+                                                  
+                                                  
+ ███████████                                      
+░░███░░░░░███                                     
+ ░███    ░███  ██████   ████████   █████   ██████ 
+ ░██████████  ░░░░░███ ░░███░░███ ███░░   ███░░███
+ ░███░░░░░░    ███████  ░███ ░░░ ░░█████ ░███████ 
+ ░███         ███░░███  ░███      ░░░░███░███░░░  
+ █████       ░░████████ █████     ██████ ░░██████ 
+░░░░░         ░░░░░░░░ ░░░░░     ░░░░░░   ░░░░░░  
+"""
+
+
+        init() #  Colorama Init
+        print(f"{Fore.BLUE}{Style.BRIGHT}{Banner}")
+        print("\n\n")
         URL = input(f"{self.Stamp.Input} Please Enter URL: ")
 
 
@@ -724,7 +757,7 @@ class UI:
 
             if self.HasInternet is False:
                 os.system(self.ClearScreenCommand)
-                print(f"{Stamps.Stamp.Warring} Will not parse names due to lack of internet connective need for API calls")
+                print(f"{Stamps.Stamp.Warring} Will not parse names due to lack of internet connective need for API calls (If they are needed)")
                 WantToContinue = input(f"{self.Stamp.Input} Do you want to continue y/n: ")
 
                 if WantToContinue.lower() == "n" or WantToContinue.lower() == 'no':
@@ -739,7 +772,7 @@ class UI:
 
         else:
             if self.HasInternet is False:
-                print(f"{Stamps.Stamp.Warring} Will not parse names due to lack of internet connective need for API calls")
+                print(f"{Stamps.Stamp.Warring} Will not parse names due to lack of internet connective need for API calls (If they are needed)")
                 WantToContinue = input(f"{self.Stamp.Input} Do you want to continue y/n: ")
 
                 if WantToContinue.lower() == "n" or WantToContinue.lower() == 'no':
@@ -754,8 +787,8 @@ class UI:
             Main(URL=URL)
 
 if __name__ == '__main__':
-    #UI()
-    Main(URL="https://www.apple.com/contact/")
+    UI()
+    #Main(URL="https://brandt.co/about-us?alttemplate=aboutcontactus")
 
 
 
@@ -781,7 +814,7 @@ if __name__ == '__main__':
 
 # ---| Issues With Names |---
 
-# https://brandt.co/about-us?alttemplate=aboutcontactus | Some name are place names but could be names
+# https://brandt.co/about-us?alttemplate=aboutcontactus | Two names are missing one has a spanish char and the other a dash
 # https://www.appnation.co/about-us | Not getting all names due to then not being US names
 
 
@@ -814,7 +847,6 @@ if __name__ == '__main__':
 # ---| Issue Cause Unknown |---
 
 # https://www.dyson.co.uk/support/contact-us | Bricks the program
-
 
 
 

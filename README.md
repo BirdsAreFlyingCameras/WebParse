@@ -4,7 +4,7 @@
 
 **Version Number: Beta 1.0**
 
-WebParse is a command-line tool that retrieves names, addresses, phone numbers, and emails from a given URL and outputs
+WebParse is a command-line tool that retrieves names, addresses, phone numbers, and emails from a webpage and outputs
 them in a human-friendly format to the command line, with an option to save the results in a text file.
 WebParse extensively uses regex to retrieve the desired information from raw HTML. Due to the use of regex,
 WebParse is imperfect and mainly relies on text being matched by a regex pattern (this does not apply to names).

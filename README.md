@@ -26,7 +26,7 @@ This is particularly challenging if the word lists don't have the necessary cont
 
 **Travel to the path of installation:**
 
-    cd [Path to script]
+    cd WebParse
 
 **Then install the requirements:**
 
@@ -39,7 +39,7 @@ This is particularly challenging if the word lists don't have the necessary cont
 
 **Travel to the path of installation:**
 
-    cd <Path to script>
+    cd <Path To Script>
 
 **Then to run the script:**
 

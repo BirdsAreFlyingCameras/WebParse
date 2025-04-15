@@ -2,7 +2,7 @@
 
 ## About
 
-**Version Number: Beta 1.0**
+**Version Number: Beta 1.1**
 
 WebParse is a command-line tool that retrieves names, addresses, phone numbers, and emails from a webpage and outputs
 them in a human-friendly format to the command line, with an option to save the results in a text file.
@@ -44,5 +44,11 @@ This is particularly challenging if the word lists don't have the necessary cont
 **Then to run the script:**
 
     python3 main.py
+
+## Comming Soon
+
+- Non-Interactive Mode: Run the program directly from the command line without any additional input, streamlining your workflow and automation.
+- Expanded Export Options: Choose from a variety of output formats .xlsx, .xls, .ods, and sqlite.
+- Proxy Routing Capability: Allow users to route requests made by the program through a proxy.
 
 ![WebParseDemo.gif](images%2FWebParseDemo.gif)

@@ -1,6 +1,4 @@
 import html
-import pprint
-import time
 import PyEnhance.Loading
 import requests
 import unicodedata
@@ -9,14 +7,12 @@ import os
 import urllib3
 import re
 import regex
-from PyEnhance import Loading, Timer, Counter, WebTools, Stamps
+from PyEnhance import WebTools, Stamps
 from concurrent.futures import ThreadPoolExecutor
 from rich.console import Console
 from rich.table import Table
 import platform
 from colorama import init, Fore, Style
-import brotli
-
 
 class Main:
 
@@ -26,7 +22,7 @@ class Main:
         self.URL = URL
 
         self.WebHeaders = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 OPR/117.0.0.0",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
             "Accept-Language": "en-US,en;q=0.9",
             "Accept-Encoding": "gzip, deflate, br",
@@ -257,7 +253,7 @@ class Main:
                         NotInDict.append(SubString)
                         continue
 
-                    if str(SubString).lower() in self.CommonWordsFromFile or str(SubString) in self.CommonWordsFromFile:
+                    if str(SubString).lower() in self.AllWordsFromWebsters or str(SubString) in self.AllWordsFromWebsters:
                         InDict.append(SubString)
                         continue
 
@@ -393,10 +389,9 @@ class Main:
 
     #|=|=| ADDRESS MATCH CODE END |=|=|#
 
-        # ||| Start of code I will add to PyEnhance |||
 
         self.NamesFromFile = []
-        self.CommonWordsFromFile = []
+        self.AllWordsFromWebsters = []
         self.CityNamesFromFile = []
         self.WebsitePhrasesFromFile = []
         self.CountryNamesFromFile = []
@@ -408,9 +403,9 @@ class Main:
             for Name in f:
                 self.NamesFromFile.append(Name.replace('\n', ''))
 
-        with open('WordLists/CommonWords.txt', 'r', encoding='utf-8') as f:
+        with open('WordLists/Merriam-Webster-All-Words.txt', 'r', encoding='utf-8') as f:
             for Word in f:
-                self.CommonWordsFromFile.append(Word.replace('\n', ''))
+                self.AllWordsFromWebsters.append(Word.replace('\n', ''))
 
         with open('WordLists/CityNames.txt', 'r', encoding='utf-8') as f:
             for City in f:
@@ -432,8 +427,6 @@ class Main:
             for JobTitle in f:
                 self.JobTitlesFromFile.append(JobTitle.replace('\n', ''))
 
-
-        # ||| End of code I will add to PyEnhance |||
 
 
     #|=|=| NAME MATCH CODE START |=|=|#
@@ -457,7 +450,7 @@ class Main:
             SubNames = str(Name).split(' ')
 
             for Sub in SubNames:
-                if Sub.lower() in self.CommonWordsFromFile and Sub not in self.NamesFromFile:
+                if Sub.lower() in self.AllWordsFromWebsters and Sub not in self.NamesFromFile:
                     SubNames.remove(Sub)
 
             if len(SubNames) > 1:

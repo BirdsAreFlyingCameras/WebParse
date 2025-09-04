@@ -47,8 +47,8 @@ This is particularly challenging if the word lists don't have the necessary cont
 
 ## Comming Soon
 
-- Non-Interactive Mode: Run the program directly from the command line without any additional input, streamlining your workflow and automation.
-- Expanded Export Options: Choose from a variety of output formats .xlsx, .xls, .ods, and sqlite.
+- Non-Interactive Mode: Allow users to directly run the program from the command line.
+- Expanded Export Options:  New output formats .xls, .ods, and sqlite.
 - Proxy Routing Capability: Allow users to route requests made by the program through a proxy.
 
 ![WebParseDemo.gif](images%2FWebParseDemo.gif)
